@@ -13,6 +13,8 @@ import { ExceptionBarChart } from "@/components/charts/ExceptionBarChart";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 
+import { DashboardAISummaryCard } from "@/components/ai/DashboardAISummaryCard";
+
 export default function DashboardPage() {
   const { data, isLoading, isError, refetch } = useDashboard();
 
@@ -23,6 +25,7 @@ export default function DashboardPage() {
           <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
           <p className="text-text-secondary">Overview of reconciliation status</p>
         </div>
+        <Skeleton className="w-full h-48 rounded-xl" />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <MetricCardSkeleton />
           <MetricCardSkeleton />
@@ -117,6 +120,8 @@ export default function DashboardPage() {
           </Link>
         </div>
       </div>
+
+      <DashboardAISummaryCard />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard

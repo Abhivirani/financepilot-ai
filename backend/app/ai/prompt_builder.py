@@ -43,6 +43,7 @@ class PromptBuilder:
         # request time.
         self._exception_template = _load_template("exception_explanation.md")
         self._report_template = _load_template("report_summary.md")
+        self._dashboard_template = _load_template("dashboard_summary.md")
         self._chat_system = _load_template("chat_system.md")
 
     # ------------------------------------------------------------------
@@ -55,13 +56,35 @@ class PromptBuilder:
         """Return the ``messages`` list for an exception explanation request."""
         user_content = Template(self._exception_template).safe_substitute(
             exception_id=ctx.exception_id,
-            rule_type=ctx.rule_type,
+            rule_name=ctx.rule_name,
             severity=ctx.severity,
+            title=ctx.title,
+            description=ctx.description,
             transaction_id=ctx.transaction_id,
+            affected_datasets=json.dumps(ctx.affected_datasets),
+            recommended_action=ctx.recommended_action,
+            metadata=json.dumps(ctx.metadata, default=str),
             amount=ctx.amount,
             currency=ctx.currency,
-            bank_record=json.dumps(ctx.bank_record, default=str) if ctx.bank_record else "N/A",
-            gateway_record=json.dumps(ctx.gateway_record, default=str) if ctx.gateway_record else "N/A",
+            total_exceptions=ctx.total_exceptions,
+            current_match_rate=ctx.current_match_rate,
+        )
+        return [
+            {"role": "user", "content": user_content},
+        ]
+
+    def build_dashboard_summary_messages(self, ctx: DashboardSummaryContext) -> List[Dict[str, str]]:
+        """Return the messages list for a dashboard summary request."""
+        user_content = Template(self._dashboard_template).safe_substitute(
+            total_transactions=ctx.total_transactions,
+            matched_transactions=ctx.matched_transactions,
+            unmatched_transactions=ctx.unmatched_transactions,
+            match_rate=ctx.match_rate,
+            total_exceptions=ctx.total_exceptions,
+            critical_exceptions=ctx.critical_exceptions,
+            financial_summary=json.dumps(ctx.financial_summary, indent=2),
+            rule_distribution=json.dumps(ctx.rule_distribution, indent=2),
+            source_volume=json.dumps(ctx.source_volume, indent=2),
         )
         return [
             {"role": "user", "content": user_content},
@@ -95,6 +118,18 @@ class PromptBuilder:
         messages.append({"role": "user", "content": ctx.user_message})
         return messages
 
-    def get_system_prompt(self) -> str:
+    def get_system_prompt(self, ctx: Optional[ChatContext] = None) -> str:
         """Return the system prompt used for all chat completions."""
-        return self._chat_system
+        if not ctx or not ctx.dashboard_context:
+            return Template(self._chat_system).safe_substitute(dashboard_context="No recent dashboard context available.")
+            
+        dash = ctx.dashboard_context
+        dash_str = (
+            f"- Match Rate: {dash.match_rate}%\n"
+            f"- Total Exceptions: {dash.total_exceptions}\n"
+            f"- Critical Exceptions: {dash.critical_exceptions}\n"
+            f"- Financials: {json.dumps(dash.financial_summary)}\n"
+            f"- Rule Distribution: {json.dumps(dash.rule_distribution)}\n"
+            f"- Source Volume: {json.dumps(dash.source_volume)}"
+        )
+        return Template(self._chat_system).safe_substitute(dashboard_context=dash_str)

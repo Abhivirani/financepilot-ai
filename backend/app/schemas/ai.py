@@ -12,4 +12,23 @@ class AIExplainRequest(BaseModel):
     )
 
 class AIExplainResponseData(BaseModel):
-    explanation: str
+    summary: str
+    markdown: str
+    confidence: int
+    latency_ms: int
+
+class AIDashboardSummaryResponseData(BaseModel):
+    summary: str
+    markdown: str
+    confidence: int
+    latency_ms: int
+    generated_at: str
+
+class AIChatRequest(BaseModel):
+    message: str
+
+class AIChatResponseData(BaseModel):
+    answer: str
+    confidence: int
+    latency_ms: int
+    generated_at: str

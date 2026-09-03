@@ -10,10 +10,15 @@ import { Search, Filter, Download } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 
+import { ExplainDialog } from "@/components/ai/ExplainDialog";
+import { Sparkles } from "lucide-react";
+
 export default function ExceptionsPage() {
   const [searchTerm, setSearchTerm] = React.useState("");
   const [page, setPage] = React.useState(1);
   const [debouncedSearch, setDebouncedSearch] = React.useState("");
+  const [explainExceptionId, setExplainExceptionId] = React.useState<string | null>(null);
+  const [isExplainOpen, setIsExplainOpen] = React.useState(false);
   
   React.useEffect(() => {
     const handler = setTimeout(() => {
@@ -31,6 +36,12 @@ export default function ExceptionsPage() {
   
   const exceptions = data?.items || [];
   const totalPages = data?.total_pages || 1;
+
+  const handleExplain = (e: React.MouseEvent, exceptionId: string) => {
+    e.stopPropagation();
+    setExplainExceptionId(exceptionId);
+    setIsExplainOpen(true);
+  };
   
   const columns = [
     { header: "Exception ID", accessorKey: "exception_id", className: "font-mono font-medium text-xs text-brand truncate max-w-[120px]" },
@@ -64,13 +75,29 @@ export default function ExceptionsPage() {
     { 
       header: "Created", 
       accessorKey: "created_at", 
-      className: "text-right text-sm",
+      className: "text-right text-sm hidden md:table-cell",
       cell: (row: any) => format(new Date(row.created_at), "MMM d, HH:mm")
     },
+    {
+      header: "Actions",
+      accessorKey: "actions",
+      className: "text-right",
+      cell: (row: any) => (
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={(e) => handleExplain(e, row.exception_id)}
+          className="text-brand hover:bg-brand/10 hover:text-brand px-2 py-1 h-8"
+        >
+          <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+          Explain
+        </Button>
+      )
+    }
   ];
   
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Exceptions Inbox</h1>
@@ -111,7 +138,11 @@ export default function ExceptionsPage() {
             data={exceptions} 
             columns={columns as any}
             isLoading={isLoading}
-            onRowClick={(row) => console.log("Clicked row", row)}
+            onRowClick={(row: any) => {
+              // Usually opens exception detail, but for now we'll just open Explain dialog
+              setExplainExceptionId(row.exception_id);
+              setIsExplainOpen(true);
+            }}
           />
         </div>
         
@@ -139,6 +170,12 @@ export default function ExceptionsPage() {
           </div>
         </div>
       </div>
+
+      <ExplainDialog 
+        exceptionId={explainExceptionId}
+        isOpen={isExplainOpen}
+        onOpenChange={setIsExplainOpen}
+      />
     </div>
   );
 }

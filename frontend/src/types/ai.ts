@@ -26,9 +26,10 @@ export interface ChatMessage {
 }
 
 export interface ChatResponse {
-  reply: string;
-  suggested_questions: string[];
-  source: "llm" | "cache" | "placeholder";
+  answer: string;
+  confidence: number;
+  latency_ms: number;
+  generated_at: string;
 }
 
 export interface SuggestedQuestion {
@@ -41,11 +42,19 @@ export interface SuggestedQuestion {
 // Exception Explanation
 // ──────────────────────────────────────────────
 
-export interface AIExplanation {
-  explanation: string;
-  confidence: ConfidenceLevel;
-  suggested_actions: string[];
-  source: "llm" | "cache" | "placeholder";
+export interface AIExplainResponseData {
+  summary: string;
+  markdown: string;
+  confidence: number;
+  latency_ms: number;
+}
+
+export interface AIDashboardSummaryResponseData {
+  summary: string;
+  markdown: string;
+  confidence: number;
+  latency_ms: number;
+  generated_at: string;
 }
 
 // ──────────────────────────────────────────────

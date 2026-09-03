@@ -1,6 +1,6 @@
 import { apiClient } from '../axios';
 import { endpoints } from '../endpoints';
-import type { AIExplanation, ChatResponse, AIReportSummary } from '@/types/ai';
+import type { AIExplainResponseData, AIDashboardSummaryResponseData, ChatResponse, AIReportSummary } from '@/types/ai';
 
 export const aiService = {
   /**
@@ -8,28 +8,20 @@ export const aiService = {
    * Currently returns the backend placeholder; will return Claude response
    * once the AI Copilot is activated.
    */
-  explain: (exceptionId: string) => 
+  explain: (exceptionId: string): Promise<{ data: AIExplainResponseData }> => 
     apiClient.post(endpoints.ai.explain, { exception_id: exceptionId }),
 
   /**
-   * Free-form chat with the AI assistant.
-   * Returns a mocked response until the backend chat endpoint is implemented.
+   * Generate an executive summary of the current dashboard metrics.
    */
-  chat: async (message: string, conversationHistory?: { role: string; content: string }[]): Promise<ChatResponse> => {
-    // TODO: Replace with real API call when POST /ai/chat is implemented
-    return {
-      reply:
-        "I'm currently in placeholder mode. Once Claude is connected, " +
-        "I'll be able to answer questions about your reconciliation data, " +
-        "explain specific exceptions, and suggest resolution strategies.",
-      suggested_questions: [
-        "What caused exception EX-1001?",
-        "Summarise today's reconciliation results",
-        "Which exceptions should I prioritise?",
-      ],
-      source: "placeholder",
-    };
-  },
+  getDashboardSummary: (): Promise<{ data: AIDashboardSummaryResponseData }> =>
+    apiClient.post('/ai/dashboard-summary', {}),
+
+  /**
+   * Free-form chat with the AI assistant.
+   */
+  chat: (message: string): Promise<{ data: ChatResponse }> =>
+    apiClient.post('/ai/chat', { message }),
 
   /**
    * Generate a natural-language summary of a reconciliation report.
