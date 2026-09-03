@@ -5,12 +5,12 @@ Responsibilities:
   1. Load prompt templates from ``app/ai/prompts/`` at startup.
   2. Accept a context dataclass and interpolate it into the template.
   3. Return a list of messages in the ``[{"role": ..., "content": ...}]``
-     format expected by the Anthropic Messages API.
+     format expected by ``BaseLLMClient.generate()``.
 
 Design decisions:
   - Templates live in Markdown files, **never** hardcoded strings.
   - The builder is stateless after init; safe for concurrent use.
-  - Token estimation is deferred to the ``claude_client`` layer.
+  - Token estimation is deferred to the ``llm_client`` layer.
 """
 
 from __future__ import annotations

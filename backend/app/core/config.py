@@ -18,14 +18,20 @@ class Settings(BaseSettings):
     # Business logic
     MATCH_AMOUNT_TOLERANCE: float = 0.01
     
-    # AI settings
-    ANTHROPIC_API_KEY: str = ""
-    AI_PROVIDER: str = "anthropic"
-    AI_MODEL: str = "claude-sonnet-4-20250514"
-    AI_TEMPERATURE: float = 0.3
-    AI_MAX_TOKENS: int = 2048
-    AI_TIMEOUT: int = 30
-    AI_CACHE_TTL: int = 3600  # seconds
+    # ── LLM / AI settings ──────────────────────────────────
+    # Provider selection — "gemini" | "anthropic"
+    LLM_PROVIDER: str = "gemini"
+    
+    # API keys (only the active provider's key needs to be set)
+    GEMINI_API_KEY: str = ""
+    ANTHROPIC_API_KEY: str = ""      # future / fallback
+    
+    # Model configuration
+    GEMINI_MODEL: str = "gemini-2.5-pro"
+    TEMPERATURE: float = 0.2
+    MAX_TOKENS: int = 1500
+    TIMEOUT: int = 30           # seconds
+    LLM_CACHE_TTL: int = 3600       # seconds
     
     ALLOWED_ORIGINS: list[str] = ["*"]
     

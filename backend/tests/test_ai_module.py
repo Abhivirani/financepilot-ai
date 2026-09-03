@@ -1,8 +1,12 @@
 """
 Unit tests for the AI module.
 
-These tests verify the placeholder behaviour of each AI layer.
-They will be updated when the Claude integration is activated.
+These tests verify:
+  - Context dataclass construction and immutability
+  - AIService placeholder responses (with and without an LLM client)
+  - LLM client factory routing
+  - BaseLLMClient / GeminiClient / ClaudeClient interface contracts
+  - InMemoryCache operations
 """
 
 import pytest
@@ -12,6 +16,13 @@ from backend.app.ai.context_builder import (
     ReportSummaryContext,
 )
 from backend.app.ai.ai_service import AIService, ExplanationResult, ChatResult, ReportSummaryResult
+from backend.app.ai.llm_client import (
+    BaseLLMClient,
+    GeminiClient,
+    ClaudeClient,
+    LLMResponse,
+    create_llm_client,
+)
 from backend.app.core.cache import InMemoryCache
 
 
@@ -66,6 +77,60 @@ class TestContextDataclasses:
 
 
 # ──────────────────────────────────────────────
+# LLM Client tests
+# ──────────────────────────────────────────────
+
+class TestLLMClientFactory:
+    """Verify that create_llm_client() returns the correct concrete type."""
+
+    def test_factory_returns_gemini(self):
+        client = create_llm_client(
+            "gemini", api_key="test", model="gemini-2.5-flash",
+            max_tokens=1024, temperature=0.3, timeout=30,
+        )
+        assert isinstance(client, GeminiClient)
+        assert isinstance(client, BaseLLMClient)
+
+    def test_factory_returns_claude(self):
+        client = create_llm_client(
+            "anthropic", api_key="test", model="claude-sonnet-4-20250514",
+            max_tokens=1024, temperature=0.3, timeout=30,
+        )
+        assert isinstance(client, ClaudeClient)
+        assert isinstance(client, BaseLLMClient)
+
+    def test_factory_case_insensitive(self):
+        client = create_llm_client(
+            "  Gemini  ", api_key="test", model="m",
+            max_tokens=1024, temperature=0.3, timeout=30,
+        )
+        assert isinstance(client, GeminiClient)
+
+    def test_factory_rejects_unknown_provider(self):
+        with pytest.raises(ValueError, match="Unknown LLM provider"):
+            create_llm_client(
+                "openai", api_key="test", model="gpt-4",
+                max_tokens=1024, temperature=0.3, timeout=30,
+            )
+
+
+
+
+
+class TestClaudeClientPlaceholder:
+    """ClaudeClient.generate() should raise NotImplementedError."""
+
+    @pytest.mark.asyncio
+    async def test_generate_not_implemented(self):
+        client = ClaudeClient(
+            api_key="test", model="claude-sonnet-4-20250514",
+            default_max_tokens=1024, default_temperature=0.3, timeout=30,
+        )
+        with pytest.raises(NotImplementedError, match="ClaudeClient"):
+            await client.generate(system="sys", messages=[{"role": "user", "content": "hi"}])
+
+
+# ──────────────────────────────────────────────
 # AI Service placeholder tests
 # ──────────────────────────────────────────────
 
@@ -75,6 +140,17 @@ class TestAIServicePlaceholders:
     @pytest.fixture
     def service(self):
         return AIService()
+
+    def test_service_not_active_without_client(self, service):
+        assert service.is_active is False
+
+    def test_service_active_with_client(self):
+        client = GeminiClient(
+            api_key="x", model="m",
+            default_max_tokens=1024, default_temperature=0.3, timeout=30,
+        )
+        service = AIService(llm_client=client)
+        assert service.is_active is True
 
     @pytest.mark.asyncio
     async def test_explain_exception_returns_placeholder(self, service):

@@ -10,8 +10,9 @@ The architecture is designed around three principles:
 
 1. **Separation of concerns** — data gathering, prompt rendering, and LLM
    calling live in distinct, independently testable modules.
-2. **Provider agnosticism** — the `BaseLLMClient` interface means Claude can
-   be swapped for any provider without touching business logic.
+2. **Provider agnosticism** — the `BaseLLMClient` interface means any provider
+   (Gemini, Claude, OpenAI, local models) can be swapped with a single config
+   change. `ai_service.py` **never** imports a concrete client.
 3. **Graceful degradation** — every AI feature works in placeholder mode when
    no API key is configured.
 
@@ -25,20 +26,25 @@ flowchart LR
         A[AI Page / Chat] -->|useAIExplain / useAIChat| B[API Service Layer]
     end
 
-    subgraph "FastAPI (API Layer)"
+    subgraph "FastAPI - API Layer"
         B --> C[POST /ai/explain]
         B --> D[POST /ai/chat]
         B --> E[POST /ai/summarize]
     end
 
-    subgraph "AI Module (backend/app/ai/)"
+    subgraph "AI Module - backend/app/ai/"
         C --> F[AIService]
         D --> F
         E --> F
         F --> G[ContextBuilder]
         F --> H[PromptBuilder]
-        F --> I[ClaudeClient]
+        F -->|".generate()"| I["BaseLLMClient"]
         F --> J[Cache]
+    end
+
+    subgraph "LLM Providers - llm_client.py"
+        I --> I1[GeminiClient]
+        I --> I2["ClaudeClient (future)"]
     end
 
     subgraph "Data Layer"
@@ -46,8 +52,9 @@ flowchart LR
         G --> L[Reconciliation Engine]
     end
 
-    subgraph "External"
-        I --> M[Anthropic Messages API]
+    subgraph "External APIs"
+        I1 --> M1[Google Gemini API]
+        I2 --> M2[Anthropic Messages API]
     end
 
     subgraph "Templates"
@@ -79,29 +86,35 @@ flowchart LR
 
 ### 2. Prompt Builder (`prompt_builder.py`)
 
-**Purpose:** Render domain context into the `messages` list expected by the
-Anthropic Messages API.
+**Purpose:** Render domain context into the `messages` list expected by
+`BaseLLMClient.generate()`.
 
 - Templates live in `prompts/` as Markdown files — **never hardcoded**.
 - Uses Python `string.Template` for `$variable` interpolation.
 - The system prompt is loaded from `chat_system.md` and passed separately.
 
-### 3. Claude Client (`claude_client.py`)
+### 3. LLM Client (`llm_client.py`)
 
-**Purpose:** Thin adapter over the Anthropic SDK.
+**Purpose:** Provider-agnostic adapter layer.
 
-- Implements `BaseLLMClient` — the **only** file that imports `anthropic`.
-- Handles retries, timeouts, and rate-limit back-off.
-- Returns a standardised `LLMResponse` dataclass.
+| Class | Provider | Status |
+|---|---|---|
+| `BaseLLMClient` | Abstract interface | ✅ Defined |
+| `GeminiClient` | Google Gemini | 🟡 Stub |
+| `ClaudeClient` | Anthropic Claude | 🟡 Stub |
+| `create_llm_client()` | Factory function | ✅ Implemented |
+
+**Key rule:** `ai_service.py` never imports `GeminiClient` or `ClaudeClient`.
+It calls `create_llm_client()` or receives a `BaseLLMClient` via DI.
 
 ### 4. AI Service (`ai_service.py`)
 
 **Purpose:** Orchestration facade called by the FastAPI endpoint layer.
 
 ```
-explain_exception(id) → ContextBuilder → PromptBuilder → ClaudeClient → Response
-chat(message)         → ContextBuilder → PromptBuilder → ClaudeClient → Response
-summarize_report(id)  → ContextBuilder → PromptBuilder → ClaudeClient → Response
+explain_exception(id) → ContextBuilder → PromptBuilder → client.generate() → Response
+chat(message)         → ContextBuilder → PromptBuilder → client.generate() → Response
+summarize_report(id)  → ContextBuilder → PromptBuilder → client.generate() → Response
 ```
 
 Each method checks the cache first and stores responses after a successful
@@ -118,7 +131,7 @@ LLM call.
 4. ContextBuilder fetches the exception + related records from StateStore
 5. PromptBuilder renders exception_explanation.md with the context
 6. Cache is checked — if hit, return immediately
-7. ClaudeClient.complete() calls the Anthropic Messages API
+7. self._llm.generate(system=..., messages=...) calls the active provider
 8. Response is cached with configurable TTL
 9. Structured result is returned to the frontend
 ```
@@ -138,23 +151,35 @@ LLM call.
 **Token budget allocation (per request):**
 - System prompt: ~500 tokens
 - User context: ~1,500 tokens (max)
-- Model response: up to `AI_MAX_TOKENS` (default 2,048)
+- Model response: up to `LLM_MAX_TOKENS` (default 2,048)
 
 ---
 
 ## Configuration
 
-All AI settings live in `backend/app/core/config.py`:
+All LLM settings live in `backend/app/core/config.py`:
 
 ```python
-AI_PROVIDER: str = "anthropic"
-AI_MODEL: str = "claude-sonnet-4-20250514"
-AI_TEMPERATURE: float = 0.3
-AI_MAX_TOKENS: int = 2048
-AI_TIMEOUT: int = 30        # seconds
-AI_CACHE_TTL: int = 3600    # seconds
-ANTHROPIC_API_KEY: str = ""  # from .env
+LLM_PROVIDER: str = "gemini"              # "gemini" | "anthropic"
+LLM_MODEL: str = "gemini-2.5-flash"
+LLM_TEMPERATURE: float = 0.3
+LLM_MAX_TOKENS: int = 2048
+LLM_TIMEOUT: int = 30                     # seconds
+LLM_CACHE_TTL: int = 3600                 # seconds
+GEMINI_API_KEY: str = ""                   # from .env
+ANTHROPIC_API_KEY: str = ""                # from .env (future)
 ```
+
+---
+
+## Adding a New Provider
+
+1. Create a new class in `llm_client.py` implementing `BaseLLMClient.generate()`.
+2. Add a branch in `create_llm_client()`.
+3. Add the API key field to `Settings` in `config.py`.
+4. Set `LLM_PROVIDER=your_provider` in `.env`.
+
+No other file needs to change.
 
 ---
 
@@ -184,11 +209,12 @@ rather than receiving a pre-built context blob.
 backend/app/ai/
 ├── __init__.py
 ├── README.md
-├── ai_service.py          ← Orchestration facade
-├── claude_client.py       ← Anthropic SDK adapter
+├── ai_service.py          ← Orchestration facade (depends on BaseLLMClient only)
+├── llm_client.py          ← BaseLLMClient, GeminiClient, ClaudeClient, factory
+├── claude_client.py       ← DEPRECATED re-export shim
 ├── context_builder.py     ← Domain data gathering
 ├── prompt_builder.py      ← Template rendering
-├── llm.py                 ← Deprecated stub
+├── llm.py                 ← DEPRECATED legacy stub
 └── prompts/
     ├── chat_system.md
     ├── exception_explanation.md
@@ -196,7 +222,7 @@ backend/app/ai/
 
 backend/app/core/
 ├── cache.py               ← Cache interface + InMemoryCache
-└── config.py              ← AI_* settings
+└── config.py              ← LLM_* settings
 
 frontend/src/components/ai/
 ├── ChatWindow.tsx
