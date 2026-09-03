@@ -20,6 +20,12 @@ class Settings(BaseSettings):
     
     # AI settings
     ANTHROPIC_API_KEY: str = ""
+    AI_PROVIDER: str = "anthropic"
+    AI_MODEL: str = "claude-sonnet-4-20250514"
+    AI_TEMPERATURE: float = 0.3
+    AI_MAX_TOKENS: int = 2048
+    AI_TIMEOUT: int = 30
+    AI_CACHE_TTL: int = 3600  # seconds
     
     ALLOWED_ORIGINS: list[str] = ["*"]
     
