@@ -1,0 +1,44 @@
+# FinancePilot AI — docker-compose skeleton
+# No application logic exists yet; this only wires up the two services
+# so `docker compose up` gives a working dev environment shell once
+# real code is added.
+
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: financepilot-backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend:/app
+      - ./datasets:/app/datasets:ro
+    networks:
+      - financepilot-net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: financepilot-frontend
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./frontend/.env.local
+    depends_on:
+      - backend
+    networks:
+      - financepilot-net
+
+networks:
+  financepilot-net:
+    driver: bridge
+
+# NOTE: no database service is defined yet. If persistent storage becomes
+# necessary beyond the local filesystem (e.g. Postgres for storing
+# reconciliation runs), add it here as a third service.

@@ -1,0 +1,15 @@
+# Data Generation Configuration
+
+# Default number of transactions to generate
+transactions: 500
+
+# Anomaly Percentages (Not implemented in Part 1)
+anomalies:
+  amount_mismatch_pct: 0.05
+  duplicate_pct: 0.02
+  missing_settlement_pct: 0.03
+  missing_invoice_pct: 0.01
+  late_settlement_pct: 0.04
+  refund_pct: 0.05
+  fee_mismatch_pct: 0.02
+  orphan_record_pct: 0.01

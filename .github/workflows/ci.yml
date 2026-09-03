@@ -1,0 +1,58 @@
+# FinancePilot AI — CI skeleton
+# No tests or lint configs exist yet; this pipeline defines the shape only
+# and will start actually failing/passing meaningfully once code is added.
+
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  backend:
+    name: Backend (Python)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Lint (placeholder)
+        run: echo "TODO: run ruff/black once code exists"
+
+      - name: Test (placeholder)
+        run: echo "TODO: run pytest once tests exist"
+
+  frontend:
+    name: Frontend (Next.js)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Lint (placeholder)
+        run: echo "TODO: run next lint once pages exist"
+
+      - name: Build (placeholder)
+        run: echo "TODO: run npm run build once pages exist"

@@ -1,0 +1,14 @@
+{
+  "record_counts": {
+    "bank": 500,
+    "gateway": 500,
+    "settlement": 500,
+    "invoice": 500
+  },
+  "execution_time_seconds": 0.13,
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "error_count": 0
+  }
+}

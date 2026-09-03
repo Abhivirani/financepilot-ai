@@ -1,0 +1,29 @@
+# FinancePilot AI — Backend Dependencies (skeleton)
+# Versions to be pinned once implementation begins.
+
+# --- Web framework ---
+fastapi
+uvicorn[standard]
+python-multipart      # required for file upload endpoints
+
+# --- Data validation / settings ---
+pydantic
+pydantic-settings
+
+# --- Data processing ---
+pandas
+numpy
+
+# --- AI integration ---
+anthropic
+
+# --- Testing ---
+pytest
+pytest-asyncio
+httpx
+
+# --- Dev tooling ---
+ruff
+black
+faker
+pyyaml
