@@ -7,7 +7,8 @@ def test_validator_happy_path():
     datasets = generate_base_data(5)
     result = validate_datasets(datasets)
     assert result["valid"] is True
-    assert result["error_count"] == 0
+    assert len(result["unexpected_errors"]) == 0
+    assert not any(result["expected_anomalies"].values())
 
 def test_validator_missing_field():
     datasets = generate_base_data(2)
@@ -15,7 +16,7 @@ def test_validator_missing_field():
     
     result = validate_datasets(datasets)
     assert result["valid"] is False
-    assert any("missing required fields" in error for error in result["errors"])
+    assert any("missing required fields" in error for error in result["unexpected_errors"])
 
 def test_validator_negative_amount():
     datasets = generate_base_data(2)
@@ -23,7 +24,7 @@ def test_validator_negative_amount():
     
     result = validate_datasets(datasets)
     assert result["valid"] is False
-    assert any("negative amount" in error for error in result["errors"])
+    assert any("negative amount" in error for error in result["unexpected_errors"])
 
 def test_validator_duplicate_id():
     datasets = generate_base_data(2)
@@ -31,16 +32,17 @@ def test_validator_duplicate_id():
     
     result = validate_datasets(datasets)
     assert result["valid"] is False
-    assert any("Duplicate Invoice ID found" in error for error in result["errors"])
+    assert any("Duplicate Invoice Primary Key found" in error for error in result["unexpected_errors"])
 
-def test_validator_missing_relationship():
+def test_validator_missing_relationship_is_expected():
     datasets = generate_base_data(2)
-    # Remove one transaction from settlement
+    # Remove one transaction from settlement (This is an Expected Anomaly: MissingSettlement)
     datasets["settlement"].pop(0)
     
     result = validate_datasets(datasets)
-    assert result["valid"] is False
-    assert any("missing in Settlement" in error for error in result["errors"])
+    assert result["valid"] is True
+    assert result["expected_anomalies"]["MissingSettlement"] == 1
+    assert len(result["unexpected_errors"]) == 0
 
 def test_validator_date_inconsistency():
     datasets = generate_base_data(1)
@@ -50,4 +52,4 @@ def test_validator_date_inconsistency():
     
     result = validate_datasets(datasets)
     assert result["valid"] is False
-    assert any("before Gateway date" in error for error in result["errors"])
+    assert any("before Gateway date" in error for error in result["unexpected_errors"])

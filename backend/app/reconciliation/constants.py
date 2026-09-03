@@ -1,0 +1,34 @@
+from enum import Enum
+
+class Severity(str, Enum):
+    HIGH = "HIGH"
+    MEDIUM = "MEDIUM"
+    LOW = "LOW"
+
+class DatasetName(str, Enum):
+    BANK = "Bank"
+    GATEWAY = "Gateway"
+    SETTLEMENT = "Settlement"
+    INVOICE = "Invoice"
+
+class TransactionStatus(str, Enum):
+    SUCCESS = "SUCCESS"
+    FAILED = "FAILED"
+    REFUNDED = "REFUNDED"
+    PENDING = "PENDING"
+    SETTLED = "SETTLED"
+
+# Default File Paths
+DEFAULT_CSV_DIR = "datasets/generated/csv"
+DEFAULT_REPORT_DIR = "datasets/processed/reports"
+
+# Rule Names
+RULE_AMOUNT_MISMATCH = "AMOUNT_MISMATCH"
+RULE_DUPLICATE = "DUPLICATE_TRANSACTION"
+RULE_MISSING_SETTLEMENT = "MISSING_SETTLEMENT"
+RULE_MISSING_INVOICE = "MISSING_INVOICE"
+RULE_LATE_SETTLEMENT = "LATE_SETTLEMENT"
+RULE_FEE_MISMATCH = "FEE_MISMATCH"
+RULE_REFUND = "REFUND_VERIFICATION"
+RULE_ORPHAN = "ORPHAN_RECORD"
+RULE_STATUS_MISMATCH = "STATUS_MISMATCH"

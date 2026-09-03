@@ -14,6 +14,7 @@ from backend.app.data_generation.faker_utils import (
 )
 from backend.app.data_generation.validator import validate_datasets
 from backend.app.data_generation.summary import generate_summary
+from backend.app.data_generation.anomaly_injector import AnomalyInjector
 
 def generate_base_data(num_transactions: int) -> Dict[str, List[Dict[str, Any]]]:
     """Generate perfect, happy-path transactions."""
@@ -130,21 +131,27 @@ def main() -> None:
     if args.seed is not None:
         set_seed(args.seed)
 
-    print(f"Generating {num_transactions} happy-path transactions...")
-    
+    print(f"Generating {num_transactions} base transactions...")
     start_time = time.time()
     
-    # Generate Data
+    # 1. Generate Base Data
     datasets = generate_base_data(num_transactions)
     
-    # Validate Data
+    # 2. Inject Anomalies
+    print("Injecting anomalies...")
+    injector = AnomalyInjector(config.anomalies)
+    datasets = injector.inject(datasets)
+    
+    # 3. Validate Data
     print("Validating generated datasets...")
     validation_results = validate_datasets(datasets)
+    
     if not validation_results.get("valid", False):
-        print(f"Validation failed: {validation_results.get('errors')}")
-        return
-
-    # Export Data
+        print(f"CRITICAL: Unexpected validation errors occurred.")
+        print(validation_results.get("unexpected_errors"))
+        # We don't abort, we still generate the summary to see the damage.
+        
+    # 4. Export Data
     base_dir = Path(__file__).parent.parent.parent.parent
     csv_dir = base_dir / "datasets" / "generated" / "csv"
     
@@ -155,10 +162,9 @@ def main() -> None:
     
     execution_time = time.time() - start_time
     
-    # Generate Summary
+    # 5. Generate Summary
     reports_dir = base_dir / "datasets" / "generated" / "reports"
     generate_summary(datasets, validation_results, execution_time, reports_dir)
-    print(f"Data generation complete. Exported to {csv_dir}")
 
 if __name__ == "__main__":
     main()

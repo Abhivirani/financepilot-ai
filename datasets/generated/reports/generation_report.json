@@ -1,14 +1,21 @@
 {
   "record_counts": {
-    "bank": 500,
-    "gateway": 500,
-    "settlement": 500,
-    "invoice": 500
+    "bank": 480,
+    "gateway": 510,
+    "settlement": 475,
+    "invoice": 490
   },
-  "execution_time_seconds": 0.13,
-  "validation": {
-    "valid": true,
-    "errors": [],
-    "error_count": 0
-  }
+  "execution_time_seconds": 0.09,
+  "validation_status": "PASS",
+  "expected_anomalies": {
+    "FeeMismatch": 10,
+    "LateSettlement": 20,
+    "DuplicateTransaction": 10,
+    "MissingSettlement": 25,
+    "MissingInvoice": 10,
+    "Refund": 5,
+    "AmountMismatch": 15,
+    "OrphanRecord": 5
+  },
+  "unexpected_errors": []
 }

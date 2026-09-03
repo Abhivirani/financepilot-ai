@@ -5,14 +5,14 @@ from pathlib import Path
 
 @dataclass
 class AnomalyConfig:
-    amount_mismatch_pct: float = 0.0
-    duplicate_pct: float = 0.0
-    missing_settlement_pct: float = 0.0
-    missing_invoice_pct: float = 0.0
-    late_settlement_pct: float = 0.0
-    refund_pct: float = 0.0
-    fee_mismatch_pct: float = 0.0
-    orphan_record_pct: float = 0.0
+    amount_mismatch: int = 0
+    duplicate: int = 0
+    missing_settlement: int = 0
+    missing_invoice: int = 0
+    late_settlement: int = 0
+    refund: int = 0
+    fee_mismatch: int = 0
+    orphan: int = 0
 
 @dataclass
 class GeneratorConfig:
@@ -34,14 +34,14 @@ def load_config(config_path: str = "config.yaml") -> GeneratorConfig:
     anomalies_data = data.get("anomalies", {})
     
     anomalies = AnomalyConfig(
-        amount_mismatch_pct=anomalies_data.get("amount_mismatch_pct", 0.0),
-        duplicate_pct=anomalies_data.get("duplicate_pct", 0.0),
-        missing_settlement_pct=anomalies_data.get("missing_settlement_pct", 0.0),
-        missing_invoice_pct=anomalies_data.get("missing_invoice_pct", 0.0),
-        late_settlement_pct=anomalies_data.get("late_settlement_pct", 0.0),
-        refund_pct=anomalies_data.get("refund_pct", 0.0),
-        fee_mismatch_pct=anomalies_data.get("fee_mismatch_pct", 0.0),
-        orphan_record_pct=anomalies_data.get("orphan_record_pct", 0.0),
+        amount_mismatch=anomalies_data.get("amount_mismatch", 0),
+        duplicate=anomalies_data.get("duplicate", 0),
+        missing_settlement=anomalies_data.get("missing_settlement", 0),
+        missing_invoice=anomalies_data.get("missing_invoice", 0),
+        late_settlement=anomalies_data.get("late_settlement", 0),
+        refund=anomalies_data.get("refund", 0),
+        fee_mismatch=anomalies_data.get("fee_mismatch", 0),
+        orphan=anomalies_data.get("orphan", 0),
     )
     
     return GeneratorConfig(transactions=transactions, anomalies=anomalies)
