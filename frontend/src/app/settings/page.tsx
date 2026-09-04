@@ -52,7 +52,7 @@ export default function SettingsPage() {
               <label className="block text-sm font-medium text-text-primary mb-1">
                 Default Currency
               </label>
-              <select className="flex h-10 w-full max-w-xs items-center justify-between rounded-md border border-border outline-ring/50 bg-bg-surface-sunken px-3 py-2 text-sm">
+              <select className="flex h-10 w-full max-w-xs items-center justify-between rounded-md border border-border-default bg-bg-surface-sunken px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent">
                 <option value="usd">USD - US Dollar</option>
                 <option value="eur">EUR - Euro</option>
                 <option value="gbp">GBP - British Pound</option>

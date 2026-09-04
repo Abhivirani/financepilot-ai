@@ -34,7 +34,12 @@ export default function UploadPage() {
     
     const formData = new FormData();
     files.forEach(file => {
-      formData.append("files", file);
+      const name = file.name.toLowerCase();
+      if (name.includes('bank')) formData.append('bank_statement', file);
+      else if (name.includes('gateway')) formData.append('payment_gateway', file);
+      else if (name.includes('settlement')) formData.append('settlement_report', file);
+      else if (name.includes('invoice')) formData.append('invoice', file);
+      else formData.append('files', file); // fallback
     });
     
     uploadFiles(formData);
@@ -44,10 +49,10 @@ export default function UploadPage() {
     setFiles(files.filter((_, i) => i !== index));
   };
   
-  const handleLoadDemo = () => {
+  const handleLoadDemo = async () => {
     // In a real app, this would fetch a demo dataset or load pre-existing files
-    // For now, it's just a UI placeholder
-    console.log("Loading demo dataset...");
+    // Simulate data loading to let UI show spinner
+    await new Promise(resolve => setTimeout(resolve, 500));
   };
   
   const handleRunReconciliation = () => {
@@ -83,7 +88,7 @@ export default function UploadPage() {
                 Supported formats: CSV, XLSX. Maximum file size 50MB.
               </p>
               
-              <div className="mt-4">
+              <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
                 <input
                   type="file"
                   id="file-upload"
@@ -94,11 +99,11 @@ export default function UploadPage() {
                 />
                 <label 
                   htmlFor="file-upload" 
-                  className={cn(buttonVariants({ variant: "default" }), "cursor-pointer bg-brand hover:bg-brand-hover text-white")}
+                  className={cn(buttonVariants({ variant: "default" }), "cursor-pointer bg-brand hover:bg-brand-hover text-white w-full sm:w-auto")}
                 >
                   Select Files
                 </label>
-                <Button variant="outline" className="ml-3 bg-bg-surface" onClick={handleLoadDemo}>
+                <Button variant="outline" className="bg-bg-surface w-full sm:w-auto" onClick={handleLoadDemo}>
                   <Database className="h-4 w-4 mr-2" />
                   Use Demo Dataset
                 </Button>

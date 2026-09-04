@@ -75,14 +75,16 @@ class DashboardSummaryContext:
 @dataclass(frozen=True)
 class ReportSummaryContext:
     """Context for generating a natural-language summary of a reconciliation report."""
-
     run_id: str
     total_transactions: int
-    matched_count: int
-    exception_count: int
+    matched_transactions: int
+    unmatched_transactions: int
+    total_exceptions: int
+    match_rate: float
+    critical_exceptions: int
     financial_summary: Dict[str, Any]
     rule_distribution: List[Dict[str, Any]]
-
+    source_volume: List[Dict[str, Any]]
 
 class ContextBuilder(ABC):
     """
@@ -110,7 +112,7 @@ class ContextBuilder(ABC):
         ...
 
     @abstractmethod
-    async def build_report_summary_context(self, run_id: str) -> ReportSummaryContext:
+    async def build_report_summary_context(self, run_id: Optional[str] = None) -> ReportSummaryContext:
         """Build the full context for a report summarisation request."""
         ...
 
@@ -225,5 +227,58 @@ class DefaultContextBuilder(ContextBuilder):
             dashboard_context=dashboard_context
         )
 
-    async def build_report_summary_context(self, run_id: str) -> ReportSummaryContext:
-        raise NotImplementedError()
+    async def build_report_summary_context(self, run_id: Optional[str] = None) -> ReportSummaryContext:
+        if not run_id:
+            run_id = self.state_store.latest_run_id
+            if not run_id:
+                raise APIException("RUN_NOT_FOUND", 404, "No recent reconciliation run found.")
+                
+        run_data = await self.state_store.get_run(run_id)
+        if not run_data:
+            raise APIException("RUN_NOT_FOUND", 404, f"Run {run_id} not found.")
+
+        summary = run_data.get("summary", {})
+        metrics = run_data.get("metrics", {})
+        exceptions = run_data.get("exceptions", [])
+        
+        critical_count = sum(1 for exc in exceptions if exc.get("severity") == "CRITICAL")
+        
+        total_tx = metrics.get("total_transactions", 0)
+        clean_tx = metrics.get("clean_transactions", 0)
+        unmatched_tx = total_tx - clean_tx
+        
+        rule_counts = {}
+        for exc in exceptions:
+            rt = exc.get("rule_name", "UNKNOWN")
+            rule_counts[rt] = rule_counts.get(rt, 0) + 1
+            
+        rule_distribution = []
+        for rt, count in sorted(rule_counts.items(), key=lambda x: x[1], reverse=True):
+            rule_distribution.append({"rule_type": rt, "count": count})
+            
+        fin = metrics.get("financials", {})
+        financial_summary = {
+            "total_gateway_volume": fin.get("total_gateway_volume", 0.0),
+            "total_settled_volume": fin.get("total_settled_volume", 0.0),
+            "unmatched_volume": fin.get("total_gateway_volume", 0.0) - fin.get("total_settled_volume", 0.0)
+        }
+
+        source_volume = []
+        batch_id = run_data.get("batch_id")
+        batch = await self.state_store.get_batch(batch_id) if batch_id else None
+        if batch:
+            for f in batch.get("files", []):
+                source_volume.append({"source_type": f.get("source_type", "UNKNOWN"), "count": f.get("row_count", 0)})
+
+        return ReportSummaryContext(
+            run_id=run_id,
+            total_transactions=total_tx,
+            matched_transactions=clean_tx,
+            unmatched_transactions=unmatched_tx,
+            total_exceptions=len(exceptions),
+            match_rate=summary.get("match_rate", 0.0),
+            critical_exceptions=critical_count,
+            financial_summary=financial_summary,
+            rule_distribution=rule_distribution,
+            source_volume=source_volume
+        )

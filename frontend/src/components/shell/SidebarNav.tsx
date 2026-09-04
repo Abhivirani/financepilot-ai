@@ -79,7 +79,7 @@ export function SidebarNav() {
               key={item.name}
               href={item.href}
               className={cn(
-                "group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                "group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors relative",
                 isActive
                   ? "bg-brand-subtle text-brand border-l-2 border-brand"
                   : "text-text-secondary hover:bg-bg-surface-sunken hover:text-text-primary",

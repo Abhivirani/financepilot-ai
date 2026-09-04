@@ -123,12 +123,8 @@ class GeminiClient(BaseLLMClient):
             LLMQuotaExceededError,
             LLMRateLimitError,
             LLMNetworkError,
-            LLMProviderError
+            LLMProviderError,
         )
-
-        if not self._api_key:
-            raise LLMAuthenticationError("GEMINI_API_KEY is not configured.")
-
         # Prepare configuration
         temp = temperature if temperature is not None else self._default_temperature
         tokens = max_tokens if max_tokens is not None else self._default_max_tokens
@@ -139,11 +135,6 @@ class GeminiClient(BaseLLMClient):
             system_instruction=system
         )
 
-        # Convert simple {"role": ..., "content": ...} to Gemini format if needed,
-        # but google.genai's generate_content handles strings. 
-        # Since the interface passes a list of dicts for messages, we can format them.
-        # Typically, user_prompt is just the last message for now, or we can format 
-        # all messages into a single prompt for this basic integration.
         prompt = "\n".join([f"{msg['role'].capitalize()}: {msg['content']}" for msg in messages])
 
         client = self._get_client()

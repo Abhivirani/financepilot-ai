@@ -46,7 +46,9 @@ async def test_ai_service_chat():
     mock_llm.generate.return_value = LLMResponse(
         content="The match rate is low due to MISSING rules.\n\nConfidence: 94%",
         model="gemini-mock",
-        usage={"total": 100}
+        input_tokens=100,
+        output_tokens=50,
+        stop_reason="stop"
     )
     
     mock_context_builder = AsyncMock()

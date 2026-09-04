@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     DESCRIPTION: str = "API for FinancePilot AI Reconciliation Engine"
     
     # Upload limits
-    MAX_BATCH_SIZE: int = 500
+    MAX_BATCH_SIZE: int = 5000
     MAX_RETAINED_BATCHES: int = 10
     MAX_RETAINED_RUNS: int = 10
     MAX_FILE_SIZE_BYTES: int = 5 * 1024 * 1024  # 5MB
@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     ANTHROPIC_API_KEY: str = ""      # future / fallback
     
     # Model configuration
-    GEMINI_MODEL: str = "gemini-2.5-pro"
+    GEMINI_MODEL: str = "gemini-3.5-flash"
     TEMPERATURE: float = 0.2
     MAX_TOKENS: int = 1500
     TIMEOUT: int = 30           # seconds
@@ -36,7 +36,10 @@ class Settings(BaseSettings):
     ALLOWED_ORIGINS: list[str] = ["*"]
     
     class Config:
-        env_file = ".env"
+        import os
+        from pathlib import Path
+        _base_dir = Path(__file__).resolve().parent.parent.parent.parent
+        env_file = str(_base_dir / ".env")
         env_file_encoding = 'utf-8'
 
 settings = Settings()

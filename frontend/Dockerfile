@@ -12,6 +12,4 @@ COPY . .
 
 EXPOSE 3000
 
-# TODO: switch to `npm run build && npm run start` for production once
-# the app has real pages.
-CMD ["npm", "run", "dev"]
+CMD ["npm", "run", "start"]

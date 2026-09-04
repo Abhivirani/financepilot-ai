@@ -50,10 +50,12 @@ class ChatResult:
 
 @dataclass(frozen=True)
 class ReportSummaryResult:
-    """Returned by ``summarize_report``."""
-
+    """Returned by ``generate_executive_report``."""
+    title: str
     summary: str
-    key_findings: List[str]
+    markdown: str
+    confidence: int
+    latency_ms: int
     source: str
 
 
@@ -180,18 +182,7 @@ class AIService:
         run_id: Optional[str] = None,
     ) -> ChatResult:
         """Handle a free-form chat message from the AI Assistant page."""
-        if not self._llm or not self._context_builder or not self._prompt_builder:
-            return ChatResult(
-                answer=(
-                    "I'm currently in placeholder mode. Once an LLM provider is "
-                    "connected, I'll be able to answer questions about your "
-                    "reconciliation data, explain specific exceptions, and suggest "
-                    "resolution strategies."
-                ),
-                confidence=0,
-                latency_ms=0,
-                source="placeholder",
-            )
+        pass
 
         start_time = time.time()
         history = conversation_history or []
@@ -234,19 +225,51 @@ class AIService:
     # Report summarisation
     # ------------------------------------------------------------------
 
-    async def summarize_report(self, run_id: str) -> ReportSummaryResult:
-        """Generate a natural-language summary of a reconciliation report."""
-        # TODO: when self._llm is set, call self._llm.generate()
+    async def generate_executive_report(self) -> ReportSummaryResult:
+        """Generate a natural-language executive summary of the reconciliation report."""
+        if not self._llm or not self._context_builder or not self._prompt_builder:
+            return ReportSummaryResult(
+                title="Executive Reconciliation Report (Placeholder)",
+                summary="AI report generation not available.",
+                markdown=(
+                    "# Executive Reconciliation Report\n"
+                    "Connect an LLM provider to receive an AI-generated executive "
+                    "summary covering match rates, exception trends, and "
+                    "recommended actions."
+                ),
+                confidence=0,
+                latency_ms=0,
+                source="placeholder",
+            )
+
+        start_time = time.time()
+        context = await self._context_builder.build_report_summary_context()
+        messages = self._prompt_builder.build_report_messages(context)
+        
+        response = await self._llm.generate(
+            system="You are an expert financial reconciliation AI analyst.",
+            messages=messages
+        )
+        
+        latency_ms = int((time.time() - start_time) * 1000)
+        
+        # Parse confidence
+        confidence = 0
+        conf_match = re.search(r"Confidence:\s*(\d+)%", response.content, re.IGNORECASE)
+        if conf_match:
+            confidence = int(conf_match.group(1))
+            
+        # Extract summary (Executive Summary section)
+        summary = "No summary provided."
+        summary_match = re.search(r"#\s*Executive Summary\s*\n(.*?)(?=\n#|$)", response.content, re.IGNORECASE | re.DOTALL)
+        if summary_match:
+            summary = summary_match.group(1).strip()
+            
         return ReportSummaryResult(
-            summary=(
-                f"Report for run {run_id}: This is a placeholder summary. "
-                "Connect an LLM provider to receive an AI-generated executive "
-                "summary covering match rates, exception trends, and "
-                "recommended actions."
-            ),
-            key_findings=[
-                "Placeholder finding 1",
-                "Placeholder finding 2",
-            ],
-            source="placeholder",
+            title="Executive Reconciliation Report",
+            summary=summary,
+            markdown=response.content.strip(),
+            confidence=confidence,
+            latency_ms=latency_ms,
+            source="llm"
         )

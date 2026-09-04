@@ -28,7 +28,7 @@ export function ExplainDialog({ exceptionId, isOpen, onOpenChange }: ExplainDial
     setError(null);
     try {
       const response = await aiService.explain(id);
-      setData(response.data);
+      setData(response);
     } catch (err: any) {
       console.error(err);
       if (err.response?.status === 401 || err.response?.status === 403) {

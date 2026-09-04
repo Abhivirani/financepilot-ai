@@ -17,7 +17,7 @@ export function DashboardAISummaryCard() {
     queryKey: ["dashboard-ai-summary"],
     queryFn: async () => {
       const response = await aiService.getDashboardSummary();
-      return response.data;
+      return response;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 1,
@@ -42,7 +42,7 @@ export function DashboardAISummaryCard() {
         <Sparkles className="w-32 h-32 text-ai" />
       </div>
       
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
+      <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0 pb-2">
         <div className="flex items-center gap-2 z-10">
           <div className="p-1.5 rounded-md bg-ai/10 text-ai">
             <Sparkles className="h-5 w-5" />

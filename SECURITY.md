@@ -1,3 +1,3 @@
 # Security Policy
 
-Placeholder.
+Please report security vulnerabilities directly to the maintainers.

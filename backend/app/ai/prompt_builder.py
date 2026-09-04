@@ -42,7 +42,7 @@ class PromptBuilder:
         # Pre-load templates so missing files are caught at startup, not at
         # request time.
         self._exception_template = _load_template("exception_explanation.md")
-        self._report_template = _load_template("report_summary.md")
+        self._report_template = _load_template("executive_report.md")
         self._dashboard_template = _load_template("dashboard_summary.md")
         self._chat_system = _load_template("chat_system.md")
 
@@ -95,12 +95,15 @@ class PromptBuilder:
     ) -> List[Dict[str, str]]:
         """Return the ``messages`` list for a report summary request."""
         user_content = Template(self._report_template).safe_substitute(
-            run_id=ctx.run_id,
             total_transactions=ctx.total_transactions,
-            matched_count=ctx.matched_count,
-            exception_count=ctx.exception_count,
-            financial_summary=json.dumps(ctx.financial_summary, default=str),
-            rule_distribution=json.dumps(ctx.rule_distribution, default=str),
+            matched_transactions=ctx.matched_transactions,
+            unmatched_transactions=ctx.unmatched_transactions,
+            match_rate=ctx.match_rate,
+            total_exceptions=ctx.total_exceptions,
+            critical_exceptions=ctx.critical_exceptions,
+            financial_summary=json.dumps(ctx.financial_summary, indent=2),
+            rule_distribution=json.dumps(ctx.rule_distribution, indent=2),
+            source_volume=json.dumps(ctx.source_volume, indent=2),
         )
         return [
             {"role": "user", "content": user_content},

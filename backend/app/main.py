@@ -29,8 +29,18 @@ app = FastAPI(
 # Application state
 app.state.start_time = time.time()
 
+from fastapi.middleware.cors import CORSMiddleware
+
 # Middlewares
 app.add_middleware(LoggingMiddleware)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Exception Handlers
 app.add_exception_handler(APIException, api_exception_handler)

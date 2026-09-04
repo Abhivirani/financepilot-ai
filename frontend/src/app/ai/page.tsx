@@ -47,7 +47,7 @@ export default function AICopilotPage() {
   const { mutate: sendMessage, isPending } = useMutation({
     mutationFn: async (message: string) => {
       const res = await aiService.chat(message);
-      return res.data;
+      return res;
     },
     onSuccess: (data, variables) => {
       setMessages((prev) => [
@@ -173,7 +173,7 @@ export default function AICopilotPage() {
                   {message.role === "user" ? <User size={16} /> : <Sparkles size={16} />}
                 </div>
                 
-                <div className="flex flex-col gap-1 min-w-0">
+                <div className="flex flex-col gap-1 min-w-0 group">
                   <div className={cn(
                     "rounded-2xl p-4 shadow-sm",
                     message.role === "user" 

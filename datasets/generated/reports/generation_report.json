@@ -8,14 +8,14 @@
   "execution_time_seconds": 0.09,
   "validation_status": "PASS",
   "expected_anomalies": {
-    "FeeMismatch": 10,
-    "LateSettlement": 20,
-    "DuplicateTransaction": 10,
-    "MissingSettlement": 25,
     "MissingInvoice": 10,
-    "Refund": 5,
+    "OrphanRecord": 5,
+    "MissingSettlement": 25,
+    "DuplicateTransaction": 10,
+    "LateSettlement": 20,
     "AmountMismatch": 15,
-    "OrphanRecord": 5
+    "FeeMismatch": 10,
+    "Refund": 5
   },
   "unexpected_errors": []
 }

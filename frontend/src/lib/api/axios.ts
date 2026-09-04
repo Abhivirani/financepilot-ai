@@ -10,7 +10,6 @@ export const apiClient = axios.create({
 
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    // Authentication placeholder
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;

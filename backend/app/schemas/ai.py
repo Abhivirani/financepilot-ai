@@ -32,3 +32,11 @@ class AIChatResponseData(BaseModel):
     confidence: int
     latency_ms: int
     generated_at: str
+
+class AIExecutiveReportResponseData(BaseModel):
+    title: str
+    summary: str
+    markdown: str
+    confidence: int
+    latency_ms: int
+    generated_at: str

@@ -64,5 +64,14 @@ export interface AIDashboardSummaryResponseData {
 export interface AIReportSummary {
   summary: string;
   key_findings: string[];
-  source: "llm" | "cache" | "placeholder";
+  source: string;
+}
+
+export interface AIExecutiveReportResponseData {
+  title: string;
+  summary: string;
+  markdown: string;
+  confidence: number;
+  latency_ms: number;
+  generated_at: string;
 }
