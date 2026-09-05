@@ -52,7 +52,7 @@ async def explain_exception(req: AIExplainRequest):
 @router.post("/ai/dashboard-summary", response_model=SuccessResponse[AIDashboardSummaryResponseData])
 async def dashboard_summary():
     try:
-        from datetime import datetime
+        from datetime import datetime, timezone
         result = await ai_service.generate_dashboard_summary()
         return SuccessResponse(
             data=AIDashboardSummaryResponseData(
@@ -60,7 +60,7 @@ async def dashboard_summary():
                 markdown=result.markdown,
                 confidence=result.confidence,
                 latency_ms=result.latency_ms,
-                generated_at=datetime.utcnow().isoformat() + "Z"
+                generated_at=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
             )
         )
     except LLMQuotaExceededError as e:
@@ -71,14 +71,14 @@ async def dashboard_summary():
 @router.post("/ai/chat", response_model=SuccessResponse[AIChatResponseData])
 async def chat(req: AIChatRequest):
     try:
-        from datetime import datetime
+        from datetime import datetime, timezone
         result = await ai_service.chat(req.message)
         return SuccessResponse(
             data=AIChatResponseData(
                 answer=result.answer,
                 confidence=result.confidence,
                 latency_ms=result.latency_ms,
-                generated_at=datetime.utcnow().isoformat() + "Z"
+                generated_at=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
             )
         )
     except LLMQuotaExceededError as e:
@@ -89,7 +89,7 @@ async def chat(req: AIChatRequest):
 @router.post("/ai/executive-report", response_model=SuccessResponse[AIExecutiveReportResponseData])
 async def generate_executive_report():
     try:
-        from datetime import datetime
+        from datetime import datetime, timezone
         result = await ai_service.generate_executive_report()
         return SuccessResponse(
             data=AIExecutiveReportResponseData(
@@ -98,7 +98,7 @@ async def generate_executive_report():
                 markdown=result.markdown,
                 confidence=result.confidence,
                 latency_ms=result.latency_ms,
-                generated_at=datetime.utcnow().isoformat() + "Z"
+                generated_at=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
             )
         )
     except LLMQuotaExceededError as e:

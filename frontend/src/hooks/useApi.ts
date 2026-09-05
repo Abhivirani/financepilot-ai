@@ -25,6 +25,22 @@ export function useUpload() {
   });
 }
 
+export function useUploadDemo() {
+  const queryClient = useQueryClient();
+  return useMutation<any, Error, void>({
+    mutationFn: () => ApiService.upload.uploadDemo(),
+    onSuccess: (data) => {
+      toast.success("Demo dataset generated and uploaded successfully");
+      return data;
+    },
+    onError: (error) => {
+      toast.error("Failed to generate demo dataset", {
+        description: error.message,
+      });
+    }
+  });
+}
+
 export function useReconcile() {
   const queryClient = useQueryClient();
   return useMutation<any, Error, string>({

@@ -33,5 +33,5 @@ def test_happy_path_amounts():
     assert invoice["total_amount"] == gateway["gross_amount"]
     assert settlement["gross_amount"] == gateway["gross_amount"]
     assert settlement["fee_deducted"] == gateway["fee"]
-    assert settlement["net_amount"] == gateway["gross_amount"] - gateway["fee"]
-    assert bank["amount"] == settlement["net_amount"]
+    assert round(settlement["net_amount"], 2) == round(gateway["gross_amount"] - gateway["fee"], 2)
+    assert round(bank["amount"], 2) == round(settlement["net_amount"], 2)

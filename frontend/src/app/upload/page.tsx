@@ -3,13 +3,14 @@
 import * as React from "react";
 import { UploadCloud, File, X, CheckCircle, Database, Play } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { useUpload, useReconcile } from "@/hooks/useApi";
+import { useUpload, useUploadDemo, useReconcile } from "@/hooks/useApi";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
 export default function UploadPage() {
   const [files, setFiles] = React.useState<File[]>([]);
   const { mutate: uploadFiles, isPending: isUploading, isSuccess: isUploadSuccess, data: uploadData } = useUpload();
+  const { mutate: uploadDemo, isPending: isUploadingDemo, isSuccess: isDemoSuccess, data: demoData } = useUploadDemo();
   const { mutate: runReconciliation, isPending: isReconciling, isSuccess: isReconcileSuccess } = useReconcile();
   const router = useRouter();
 
@@ -49,17 +50,19 @@ export default function UploadPage() {
     setFiles(files.filter((_, i) => i !== index));
   };
   
-  const handleLoadDemo = async () => {
-    // In a real app, this would fetch a demo dataset or load pre-existing files
-    // Simulate data loading to let UI show spinner
-    await new Promise(resolve => setTimeout(resolve, 500));
+  const handleLoadDemo = () => {
+    uploadDemo();
   };
   
   const handleRunReconciliation = () => {
-    // Run reconciliation on the uploaded batch
-    const batchId = uploadData?.data?.batch_id || "latest-batch";
-    runReconciliation(batchId);
+    const batchId = uploadData?.batch_id || demoData?.batch_id;
+    if (batchId) {
+      runReconciliation(batchId);
+    }
   };
+  
+  const isAnyUploadSuccess = isUploadSuccess || isDemoSuccess;
+  const isAnyUploading = isUploading || isUploadingDemo;
   
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -103,9 +106,9 @@ export default function UploadPage() {
                 >
                   Select Files
                 </label>
-                <Button variant="outline" className="bg-bg-surface w-full sm:w-auto" onClick={handleLoadDemo}>
+                <Button variant="outline" className="bg-bg-surface w-full sm:w-auto" onClick={handleLoadDemo} disabled={isAnyUploading}>
                   <Database className="h-4 w-4 mr-2" />
-                  Use Demo Dataset
+                  {isUploadingDemo ? "Generating..." : "Use Demo Dataset"}
                 </Button>
               </div>
             </div>
@@ -148,7 +151,7 @@ export default function UploadPage() {
             </div>
           )}
           
-          {isUploadSuccess && !isReconcileSuccess && (
+          {isAnyUploadSuccess && !isReconcileSuccess && (
             <div className="mt-6 p-4 bg-teal-subtle border border-teal/20 rounded-lg flex items-start space-x-3">
               <CheckCircle className="h-5 w-5 text-teal shrink-0 mt-0.5" />
               <div className="flex-1">

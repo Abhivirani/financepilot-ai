@@ -36,16 +36,27 @@ export default function ReportsPage() {
   const handleDownloadPDF = async () => {
     if (typeof window === "undefined" || !reportRef.current) return;
     try {
-      const html2pdf = (await import("html2pdf.js")).default;
-      const opt = {
-        margin: [10, 10, 10, 10] as [number, number, number, number],
-        filename: `executive-report-${format(new Date(), "yyyy-MM-dd")}.pdf`,
-        image: { type: 'jpeg' as const, quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, logging: false },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' as const }
-      };
-      html2pdf().set(opt).from(reportRef.current).save();
+      const { toJpeg } = await import('html-to-image');
+      const { jsPDF } = await import('jspdf');
+
+      const element = reportRef.current;
+      const dataUrl = await toJpeg(element, { quality: 0.98, backgroundColor: '#ffffff' });
+      
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+      
+      const imgProps = pdf.getImageProperties(dataUrl);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      
+      pdf.addImage(dataUrl, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`executive-report-${format(new Date(), "yyyy-MM-dd")}.pdf`);
+      
     } catch (e) {
+      console.error(e);
       toast.error("Failed to generate PDF. Make sure your browser supports this feature.");
     }
   };

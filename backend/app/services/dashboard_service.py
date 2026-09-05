@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from backend.app.schemas.dashboard import (
@@ -15,13 +15,42 @@ class DashboardService:
 
     async def get_dashboard(self, run_id: Optional[str] = None) -> DashboardResponseData:
         if not run_id:
-            if not self.state_store.latest_run_id:
-                raise APIException("NO_COMPLETED_RUNS", 404, "No completed runs available.")
             run_id = self.state_store.latest_run_id
             
-        run_data = await self.state_store.get_run(run_id)
+        run_data = None
+        if run_id:
+            run_data = await self.state_store.get_run(run_id)
+            
         if not run_data:
-            raise APIException("RUN_NOT_FOUND", 404, f"No run found with ID {run_id}.")
+            # Return empty dashboard instead of 404
+            return DashboardResponseData(
+                run_id="empty-run",
+                generated_at=datetime.now(timezone.utc),
+                metrics=DashboardMetrics(
+                    match_rate=0.0,
+                    total_transactions=0,
+                    matched_transactions=0,
+                    unmatched_transactions=0,
+                    total_exceptions=0,
+                    critical_exceptions=0,
+                    processing_time_ms=0
+                ),
+                charts=DashboardCharts(
+                    match_status_breakdown=[],
+                    rule_distribution_chart=[],
+                    source_volume=[],
+                    daily_transaction_volume=[]
+                ),
+                rule_distribution=[],
+                financial_summary=FinancialSummary(
+                    total_amount_processed=0.0,
+                    matched_amount=0.0,
+                    unmatched_amount=0.0,
+                    discrepancy_amount=0.0,
+                    currency="USD"
+                ),
+                recent_exceptions=[]
+            )
             
         summary = run_data["summary"]
         metrics = run_data["metrics"]
@@ -92,7 +121,7 @@ class DashboardService:
                 source_volume.append(ChartDataPoint(label=f["source_type"], value=f["row_count"]))
                 
         # Daily volume - simple mock for now, hard to extract without full data
-        daily_volume = [ChartDataPoint(label=datetime.utcnow().strftime("%Y-%m-%d"), value=total_tx)]
+        daily_volume = [ChartDataPoint(label=datetime.now(timezone.utc).strftime("%Y-%m-%d"), value=total_tx)]
         
         charts = DashboardCharts(
             match_status_breakdown=match_status_breakdown,
@@ -134,12 +163,12 @@ class DashboardService:
                 severity=sev_enum,
                 transaction_id=exc["transaction_id"],
                 amount=exc.get("amount", 0.0),
-                created_at=datetime.fromisoformat(exc.get("created_at", datetime.utcnow().isoformat()))
+                created_at=datetime.fromisoformat(exc.get("created_at", datetime.now(timezone.utc).isoformat()))
             ))
             
         return DashboardResponseData(
             run_id=run_id,
-            generated_at=datetime.utcnow(),
+            generated_at=datetime.now(timezone.utc),
             metrics=dash_metrics,
             charts=charts,
             rule_distribution=rule_distribution,

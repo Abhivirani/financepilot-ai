@@ -30,12 +30,17 @@ export function ExplainDialog({ exceptionId, isOpen, onOpenChange }: ExplainDial
       const response = await aiService.explain(id);
       setData(response);
     } catch (err: any) {
-      console.error(err);
-      if (err.response?.status === 401 || err.response?.status === 403) {
+      console.error("AI Explanation Error:", err instanceof Error ? err.message : JSON.stringify(err));
+      // Support both raw Axios errors and unwrapped backend ErrorBody objects
+      const isAuthError = err.response?.status === 401 || err.response?.status === 403 || err.code === 'UNAUTHORIZED' || err.message?.toLowerCase().includes('invalid api key');
+      const isQuotaError = err.response?.status === 429 || err.code === 'AI_QUOTA_EXCEEDED';
+      const isTimeout = err.code === "ECONNABORTED" || err.message?.toLowerCase().includes("timeout");
+
+      if (isAuthError) {
         setError("Authentication failed. Please check your API key.");
-      } else if (err.response?.status === 429) {
+      } else if (isQuotaError) {
         setError("Rate limit or quota exceeded. Please try again later.");
-      } else if (err.code === "ECONNABORTED" || err.message.includes("timeout")) {
+      } else if (isTimeout) {
         setError("Network timeout. The request took too long.");
       } else {
         setError(err.response?.data?.message || err.message || "Failed to generate explanation.");

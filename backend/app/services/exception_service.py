@@ -1,5 +1,5 @@
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 import math
 
 from backend.app.schemas.exceptions import (
@@ -17,13 +17,17 @@ class ExceptionService:
     async def get_exceptions(self, filters: ExceptionFilterParams) -> PaginatedExceptionsData:
         run_id = filters.run_id
         if not run_id:
-            if not self.state_store.latest_run_id:
-                raise APIException("RUN_NOT_FOUND", 404, "No completed runs available.")
             run_id = self.state_store.latest_run_id
             
-        run_data = await self.state_store.get_run(run_id)
+        run_data = None
+        if run_id:
+            run_data = await self.state_store.get_run(run_id)
+            
         if not run_data:
-            raise APIException("RUN_NOT_FOUND", 404, f"No run found with ID {run_id}.")
+            return PaginatedExceptionsData(
+                items=[],
+                pagination=PaginationMeta(page=1, page_size=filters.page_size, total_items=0, total_pages=0)
+            )
             
         exceptions = run_data.get("exceptions", [])
         
@@ -98,7 +102,7 @@ class ExceptionService:
                 amount=exc.get("amount", 0.0),
                 currency=exc.get("currency", "USD"),
                 description=exc.get("description", ""),
-                created_at=datetime.fromisoformat(exc.get("created_at", datetime.utcnow().isoformat()))
+                created_at=datetime.fromisoformat(exc.get("created_at", datetime.now(timezone.utc).isoformat()))
             ))
             
         meta = PaginationMeta(
@@ -130,7 +134,7 @@ class ExceptionService:
         # Simulate AI explanation generation for the first time
         if "ai_explanation" not in exc or not exc["ai_explanation"]:
             exc["ai_explanation"] = "This is a simulated AI explanation. The root cause is a discrepancy between systems."
-            exc["explanation_generated_at"] = datetime.utcnow().isoformat()
+            exc["explanation_generated_at"] = datetime.now(timezone.utc).isoformat()
             exc["suggested_action"] = "Review the raw logs and adjust the settlement configuration."
             
             # Save the updated run back to state_store
@@ -149,7 +153,7 @@ class ExceptionService:
             source=TransactionSource.BANK,
             amount=exc.get("amount", 0.0),
             currency=exc.get("currency", "USD"),
-            timestamp=datetime.fromisoformat(exc.get("created_at", datetime.utcnow().isoformat())),
+            timestamp=datetime.fromisoformat(exc.get("created_at", datetime.now(timezone.utc).isoformat())),
             raw_fields=exc.get("metadata", {})
         )
         
@@ -174,3 +178,64 @@ class ExceptionService:
             explanation_generated_at=datetime.fromisoformat(exc.get("explanation_generated_at")) if exc.get("explanation_generated_at") else None,
             suggested_action=exc.get("suggested_action")
         )
+
+    async def export_exceptions(self, run_id: Optional[str] = None) -> str:
+        import csv
+        import io
+        if not run_id:
+            run_id = self.state_store.latest_run_id
+        if not run_id:
+            return "Exception ID,Transaction ID,Rule Type,Severity,Amount,Status\n"
+            
+        run_data = await self.state_store.get_run(run_id)
+        if not run_data:
+            return "Exception ID,Transaction ID,Rule Type,Severity,Amount,Status\n"
+            
+        exceptions = run_data.get("exceptions", [])
+        
+        output = io.StringIO()
+        writer = csv.writer(output)
+        writer.writerow(["Exception ID", "Transaction ID", "Rule Type", "Severity", "Amount", "Status", "Description"])
+        
+        for exc in exceptions:
+            writer.writerow([
+                exc.get("exception_id", ""),
+                exc.get("transaction_id", ""),
+                exc.get("rule_name", ""),
+                exc.get("severity", ""),
+                exc.get("amount", ""),
+                exc.get("status", "OPEN"),
+                exc.get("description", "")
+            ])
+            
+        return output.getvalue()
+
+    async def auto_resolve(self, run_id: Optional[str] = None) -> int:
+        import json
+        from pathlib import Path
+        from backend.app.core.config import settings
+
+        if not run_id:
+            run_id = self.state_store.latest_run_id
+        if not run_id:
+            return 0
+            
+        run_data = await self.state_store.get_run(run_id)
+        if not run_data:
+            return 0
+            
+        exceptions = run_data.get("exceptions", [])
+        count = 0
+        for exc in exceptions:
+            # We'll mark LOW severity or specific ones as RESOLVED for this demo.
+            if exc.get("status", "OPEN") != "RESOLVED" and exc.get("severity", "LOW") == "LOW":
+                exc["status"] = "RESOLVED"
+                count += 1
+                
+        # Save state
+        report_path = Path(settings.REPORT_DIR) / f"{run_id}.json"
+        if report_path.exists():
+            with open(report_path, "w") as f:
+                json.dump(run_data, f, default=str)
+                
+        return count

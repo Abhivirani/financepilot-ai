@@ -1,7 +1,7 @@
 import pandas as pd
 from typing import List
 from fastapi import UploadFile
-from datetime import datetime
+from datetime import datetime, timezone
 
 from backend.app.schemas.upload import FileValidationSummary, BatchStatus, UploadResponseData
 from backend.app.schemas.common import TransactionSource
@@ -115,7 +115,7 @@ class UploadService:
         batch_status = BatchStatus.VALIDATED if valid_files_count == len(provided_files) else BatchStatus.PARTIALLY_VALID
         
         summary_dict = {
-            "uploaded_at": datetime.utcnow(),
+            "uploaded_at": datetime.now(timezone.utc),
             "files": [s.model_dump() for s in file_summaries],
             "total_transactions": total_transactions,
             "status": batch_status.value

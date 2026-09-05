@@ -3,7 +3,7 @@ import json
 import asyncio
 from typing import Optional, Dict, Any
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 
 from backend.app.schemas.reconcile import ReconcileRequest, ReconcileResponseData, RunStatus, ReconcileSummary
 from backend.app.schemas.upload import BatchStatus
@@ -43,7 +43,7 @@ class ReconciliationService:
             
         # For simplicity, we won't block PARTIALLY_VALID as long as it has >=2 files, which upload service guarantees.
             
-        started_at = datetime.utcnow()
+        started_at = datetime.now(timezone.utc)
         
         # Run reconciliation using existing engine modules.
         # We wrap the engine flow to capture results for the state store.
@@ -123,13 +123,13 @@ class ReconciliationService:
                     "source": TransactionSource.BANK.value, # Dummy, we need to map this in dashboard later or extract it
                     "amount": 0.0,
                     "currency": "USD",
-                    "created_at": datetime.utcnow().isoformat()
+                    "created_at": datetime.now(timezone.utc).isoformat()
                 })
             
             # Add basic fields based on records to exceptions
             # In a real app we'd attach the real transaction source/amount.
             
-            completed_at = datetime.utcnow()
+            completed_at = datetime.now(timezone.utc)
             processing_time_ms = int(execution_time * 1000)
             
             run_data = {

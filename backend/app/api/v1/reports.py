@@ -11,7 +11,7 @@ router = APIRouter(prefix="/reports")
 def list_reports():
     reports_dir = Path("generated_reports")
     if not reports_dir.exists():
-        return {"data": []}
+        return {"success": True, "data": {"reports": []}}
         
     reports = []
     # Search for json files
@@ -28,4 +28,4 @@ def list_reports():
         
     # Sort by date descending
     reports.sort(key=lambda x: x["id"], reverse=True)
-    return {"data": reports}
+    return {"success": True, "data": {"reports": reports}}

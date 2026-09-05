@@ -6,4 +6,5 @@ export const uploadService = {
     apiClient.post(endpoints.upload, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
+  uploadDemo: () => apiClient.post(endpoints.uploadDemo),
 };

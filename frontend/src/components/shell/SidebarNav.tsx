@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { 
@@ -31,6 +32,11 @@ const navItems = [
 export function SidebarNav() {
   const pathname = usePathname();
   const { collapsed, toggle } = useSidebarStore();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredNavItems = navItems.filter(item => 
+    item.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <aside
@@ -55,24 +61,27 @@ export function SidebarNav() {
       </div>
 
       <div className="px-3 py-2">
-        <button className={cn(
-          "flex items-center gap-2 w-full rounded-md border border-border-default bg-bg-surface-sunken px-2 py-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors",
-          collapsed ? "justify-center px-0" : ""
-        )}>
+        <div className={cn(
+          "flex items-center gap-2 w-full rounded-md border border-border-default bg-bg-surface-sunken px-2 py-1.5 text-sm text-text-secondary transition-colors focus-within:border-brand focus-within:text-text-primary",
+          collapsed ? "justify-center px-0 cursor-pointer hover:text-text-primary" : ""
+        )}
+        onClick={() => collapsed && toggle()}
+        >
           <Search size={16} className="shrink-0" />
           {!collapsed && (
-            <div className="flex items-center justify-between w-full">
-              <span>Search...</span>
-              <kbd className="hidden md:inline-flex h-5 items-center gap-1 rounded border border-border-default bg-bg-surface px-1.5 font-mono text-[10px] font-medium opacity-100">
-                <span className="text-xs">⌘</span>K
-              </kbd>
-            </div>
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-transparent border-none outline-none text-text-primary placeholder:text-text-muted text-sm"
+            />
           )}
-        </button>
+        </div>
       </div>
 
       <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
-        {navItems.map((item) => {
+        {filteredNavItems.map((item) => {
           const isActive = pathname.startsWith(item.href);
           return (
             <Link
@@ -104,6 +113,11 @@ export function SidebarNav() {
             </Link>
           );
         })}
+        {filteredNavItems.length === 0 && !collapsed && (
+          <div className="text-center text-sm text-text-muted mt-4">
+            No results found
+          </div>
+        )}
       </nav>
 
       <div className="p-3 border-t border-border-default space-y-2">

@@ -6,17 +6,22 @@ import { DataTable } from "@/components/table/DataTable";
 import { StatusBadge } from "@/components/table/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Filter, Download } from "lucide-react";
+import { Search, Download, Sparkles, RefreshCw } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
+import { toast } from "sonner";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { exceptionsService } from "@/lib/api/services/exceptions";
 
 import { ExplainDialog } from "@/components/ai/ExplainDialog";
-import { Sparkles } from "lucide-react";
 
 export default function ExceptionsPage() {
+  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = React.useState("");
   const [page, setPage] = React.useState(1);
   const [debouncedSearch, setDebouncedSearch] = React.useState("");
+  const [severityFilter, setSeverityFilter] = React.useState("");
+  
   const [explainExceptionId, setExplainExceptionId] = React.useState<string | null>(null);
   const [isExplainOpen, setIsExplainOpen] = React.useState(false);
   
@@ -28,10 +33,11 @@ export default function ExceptionsPage() {
     return () => clearTimeout(handler);
   }, [searchTerm]);
 
-  const { data, isLoading } = useExceptions({
+  const { data, isLoading, refetch } = useExceptions({
     page,
     page_size: 15,
-    search: debouncedSearch || undefined
+    search: debouncedSearch || undefined,
+    severity: severityFilter || undefined
   });
   
   const exceptions = data?.items || [];
@@ -43,6 +49,44 @@ export default function ExceptionsPage() {
     setIsExplainOpen(true);
   };
   
+  const exportMutation = useMutation({
+    mutationFn: async () => {
+      const response = await exceptionsService.exportCSV();
+      return response;
+    },
+    onSuccess: (data: any) => {
+      const blob = new Blob([data], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `exceptions_export_${format(new Date(), "yyyy-MM-dd")}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success("Exceptions exported successfully");
+    },
+    onError: () => {
+      toast.error("Failed to export exceptions");
+    }
+  });
+
+  const autoResolveMutation = useMutation({
+    mutationFn: async () => {
+      const response = await exceptionsService.autoResolve();
+      return response;
+    },
+    onSuccess: (data: any) => {
+      toast.success(`Successfully auto-resolved ${data.resolved_count} exceptions`);
+      queryClient.invalidateQueries({ queryKey: ["exceptions"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      refetch();
+    },
+    onError: () => {
+      toast.error("Failed to auto-resolve exceptions");
+    }
+  });
+
   const columns = [
     { header: "Exception ID", accessorKey: "exception_id", className: "font-mono font-medium text-xs text-brand truncate max-w-[120px]" },
     { header: "Transaction ID", accessorKey: "transaction_id", className: "font-mono text-xs text-text-secondary truncate max-w-[120px]" },
@@ -104,11 +148,23 @@ export default function ExceptionsPage() {
           <p className="text-text-secondary">Review and resolve reconciliation discrepancies.</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="bg-bg-surface">
-            <Download className="h-4 w-4 mr-2" />
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="bg-bg-surface" 
+            onClick={() => exportMutation.mutate()}
+            disabled={exportMutation.isPending || isLoading}
+          >
+            {exportMutation.isPending ? <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
             Export
           </Button>
-          <Button className="bg-brand hover:bg-brand-hover text-white" size="sm">
+          <Button 
+            className="bg-brand hover:bg-brand-hover text-white" 
+            size="sm"
+            onClick={() => autoResolveMutation.mutate()}
+            disabled={autoResolveMutation.isPending || isLoading}
+          >
+            {autoResolveMutation.isPending ? <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> : <Sparkles className="h-4 w-4 mr-2" />}
             Auto-Resolve (2)
           </Button>
         </div>
@@ -126,10 +182,20 @@ export default function ExceptionsPage() {
             />
           </div>
           <div className="flex items-center gap-2 w-full sm:w-auto">
-            <Button variant="outline" size="sm" className="w-full sm:w-auto">
-              <Filter className="h-4 w-4 mr-2" />
-              Filter
-            </Button>
+            <select 
+              className="flex h-9 w-full sm:w-[150px] items-center justify-between rounded-md border border-border-default bg-bg-surface px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-brand"
+              value={severityFilter}
+              onChange={(e) => {
+                setSeverityFilter(e.target.value);
+                setPage(1);
+              }}
+            >
+              <option value="">All Severities</option>
+              <option value="CRITICAL">Critical</option>
+              <option value="HIGH">High</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="LOW">Low</option>
+            </select>
           </div>
         </div>
         
@@ -139,7 +205,6 @@ export default function ExceptionsPage() {
             columns={columns as any}
             isLoading={isLoading}
             onRowClick={(row: any) => {
-              // Usually opens exception detail, but for now we'll just open Explain dialog
               setExplainExceptionId(row.exception_id);
               setIsExplainOpen(true);
             }}

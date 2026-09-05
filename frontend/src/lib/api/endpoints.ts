@@ -4,6 +4,7 @@ export const endpoints = {
   health: '/health',
   dashboard: '/dashboard',
   upload: '/upload',
+  uploadDemo: '/upload/demo',
   reconcile: '/reconcile',
   exceptions: '/exceptions',
   settings: '/settings',

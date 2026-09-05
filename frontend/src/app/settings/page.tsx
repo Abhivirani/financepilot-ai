@@ -23,7 +23,7 @@ export default function SettingsPage() {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-text-primary mb-1">
-                Amount Tolerance ($)
+                Amount Tolerance (₹)
               </label>
               <p className="text-xs text-text-secondary mb-2">Maximum allowed difference between matched records.</p>
               <Input type="number" defaultValue="0.05" className="max-w-xs bg-bg-surface-sunken" />
@@ -53,9 +53,7 @@ export default function SettingsPage() {
                 Default Currency
               </label>
               <select className="flex h-10 w-full max-w-xs items-center justify-between rounded-md border border-border-default bg-bg-surface-sunken px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent">
-                <option value="usd">USD - US Dollar</option>
-                <option value="eur">EUR - Euro</option>
-                <option value="gbp">GBP - British Pound</option>
+                <option value="inr">INR - Indian Rupee</option>
               </select>
             </div>
           </div>

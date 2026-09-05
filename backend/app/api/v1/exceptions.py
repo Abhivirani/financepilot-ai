@@ -38,6 +38,18 @@ async def get_exceptions(
     result = await exception_service.get_exceptions(filters)
     return SuccessResponse(data=result)
 
+from fastapi.responses import PlainTextResponse
+
+@router.get("/exceptions/export/csv")
+async def export_exceptions_csv(
+    run_id: Optional[str] = Query(None),
+    exception_service: ExceptionService = Depends(get_exception_service)
+):
+    csv_data = await exception_service.export_exceptions(run_id)
+    return PlainTextResponse(content=csv_data, media_type="text/csv", headers={
+        "Content-Disposition": f"attachment; filename=exceptions_export.csv"
+    })
+
 @router.get("/exceptions/{id}", response_model=SuccessResponse[ExceptionDetailData])
 async def get_exception_detail(
     id: str = Path(...),
@@ -46,3 +58,11 @@ async def get_exception_detail(
 ):
     result = await exception_service.get_exception_detail(id, run_id)
     return SuccessResponse(data=result)
+
+@router.post("/exceptions/auto-resolve")
+async def auto_resolve_exceptions(
+    run_id: Optional[str] = Query(None),
+    exception_service: ExceptionService = Depends(get_exception_service)
+):
+    count = await exception_service.auto_resolve(run_id)
+    return SuccessResponse(data={"resolved_count": count})

@@ -14,9 +14,10 @@ import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { DashboardAISummaryCard } from "@/components/ai/DashboardAISummaryCard";
+import { formatCurrency } from "@/lib/formatCurrency";
 
 export default function DashboardPage() {
-  const { data, isLoading, isError, refetch } = useDashboard();
+  const { data, isLoading, isError, error, refetch } = useDashboard();
 
   if (isLoading) {
     return (
@@ -41,11 +42,12 @@ export default function DashboardPage() {
   }
 
   if (isError) {
+    console.error("Dashboard error:", error);
     return (
       <div className="mt-12">
         <ErrorState 
           title="Failed to load dashboard" 
-          message="There was a problem communicating with the backend API." 
+          message={error instanceof Error ? error.message : "There was a problem communicating with the backend API."} 
           onRetry={refetch} 
         />
       </div>
@@ -57,7 +59,7 @@ export default function DashboardPage() {
     matched_amount: 0,
     unmatched_amount: 0,
     discrepancy_amount: 0,
-    currency: "USD",
+    currency: "INR",
   };
 
   const metrics = data?.metrics || {
@@ -90,7 +92,7 @@ export default function DashboardPage() {
       header: "Amount", 
       accessorKey: "amount", 
       className: "text-right font-mono",
-      cell: (row: any) => `$${row.amount.toLocaleString('en-US', {minimumFractionDigits: 2})}`
+      cell: (row: any) => formatCurrency(row.amount)
     },
     { 
       header: "Severity", 
@@ -126,7 +128,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
           title="Total Processed"
-          value={`$${stats.total_amount_processed.toLocaleString('en-US', {minimumFractionDigits: 2})}`}
+          value={formatCurrency(stats.total_amount_processed)}
           icon={Activity}
           iconClassName="bg-brand-subtle text-brand"
           subtitle={`${metrics.total_transactions} transactions`}
@@ -134,7 +136,7 @@ export default function DashboardPage() {
 
         <MetricCard
           title="Matched"
-          value={`$${stats.matched_amount.toLocaleString('en-US', {minimumFractionDigits: 2})}`}
+          value={formatCurrency(stats.matched_amount)}
           icon={CheckCircle2}
           iconClassName="bg-teal-subtle text-teal"
           subtitle={`${metrics.match_rate.toFixed(1)}% match rate`}
@@ -142,7 +144,7 @@ export default function DashboardPage() {
 
         <MetricCard
           title="Exceptions"
-          value={`$${stats.unmatched_amount.toLocaleString('en-US', {minimumFractionDigits: 2})}`}
+          value={formatCurrency(stats.unmatched_amount)}
           icon={AlertTriangle}
           iconClassName="bg-crimson-subtle text-crimson"
           trend={{ value: "", isPositive: false, label: `${metrics.total_exceptions} cases found` }}

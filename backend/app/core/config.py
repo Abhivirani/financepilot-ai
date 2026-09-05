@@ -1,4 +1,9 @@
-from pydantic_settings import BaseSettings
+import os
+from pathlib import Path
+# pyrefly: ignore [missing-import]
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+_base_dir = Path(__file__).resolve().parent.parent.parent.parent
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "FinancePilot AI API"
@@ -35,11 +40,10 @@ class Settings(BaseSettings):
     
     ALLOWED_ORIGINS: list[str] = ["*"]
     
-    class Config:
-        import os
-        from pathlib import Path
-        _base_dir = Path(__file__).resolve().parent.parent.parent.parent
-        env_file = str(_base_dir / ".env")
-        env_file_encoding = 'utf-8'
+    model_config = SettingsConfigDict(
+        env_file=str(_base_dir / ".env"),
+        env_file_encoding='utf-8',
+        extra="ignore"
+    )
 
 settings = Settings()
