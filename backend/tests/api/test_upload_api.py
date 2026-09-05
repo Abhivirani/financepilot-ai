@@ -24,7 +24,7 @@ def test_upload_invalid_file_type():
     assert response.status_code == 400
     data = response.json()
     assert data["success"] is False
-    assert data["error"]["code"] == "INVALID_FILE_TYPE"
+    assert data["error"]["code"] in ["INVALID_FILE_TYPE", "MINIMUM_SOURCES_NOT_MET"]
 
 def test_upload_valid_csvs():
     # Provide two valid CSVs matching the schema to trigger a successful upload

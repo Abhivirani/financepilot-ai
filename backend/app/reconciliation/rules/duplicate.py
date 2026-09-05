@@ -12,14 +12,15 @@ class DuplicateTransactionRule(BaseRule):
         exceptions = []
         
         if len(record.gateway_records) > 1:
+            gw_id = record.gateway_records[0].get("gateway_txn_id", f"GW_{record.transaction_id}_1")
             exceptions.append(
                 self._create_exception(
                     record=record,
                     severity=Severity.HIGH,
                     title="Duplicate Gateway Transaction",
-                    description=f"Multiple Gateway records found for transaction {record.transaction_id}.",
+                    description=f"Gateway Transaction ID {gw_id} appears twice in Gateway.csv. Duplicate transaction detected.",
                     affected_datasets=[DatasetName.GATEWAY.value],
-                    recommended_action="Check for accidental double charging or retry logic bugs.",
+                    recommended_action="Remove Duplicate Record",
                     metadata={"count": len(record.gateway_records)}
                 )
             )

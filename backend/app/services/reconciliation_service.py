@@ -102,32 +102,77 @@ class ReconciliationService:
                 total_transactions=len(matched_records),
                 matched_count=matched_count,
                 exception_count=len(all_exceptions),
-                match_rate=metrics["match_rate_percentage"] / 100.0,
+                match_rate=round(metrics["match_rate_percentage"], 1),
                 sources_processed=sources_processed
             )
             
+            # Map records to extract actual transaction amounts
+            rec_map = {r.transaction_id: r for r in matched_records}
+
             # Format exceptions to dict for JSON serialization in state store
             exceptions_dict = []
             for exc in all_exceptions:
+                rec = rec_map.get(exc.transaction_id)
+                bank_amount = 0.0
+                gw_amount = 0.0
+                diff_amount = 0.0
+                if rec:
+                    if rec.bank_records:
+                        bank_amount = float(rec.bank_records[0].get("amount", 0.0) or 0.0)
+                    if rec.gateway_records:
+                        gw_amount = float(rec.gateway_records[0].get("gross_amount", 0.0) or 0.0)
+                    if not bank_amount and rec.invoice_records:
+                        bank_amount = float(rec.invoice_records[0].get("total_amount", 0.0) or 0.0)
+
+                # Standardize values per rule type according to requirements
+                if exc.rule_name == "AMOUNT_MISMATCH":
+                    if bank_amount > 0 and gw_amount > 0:
+                        diff_val = round(abs(bank_amount - gw_amount), 2)
+                    else:
+                        diff_val = 0.0
+                elif exc.rule_name in ["DUPLICATE_TRANSACTION", "DUPLICATE"]:
+                    if bank_amount > 0:
+                        gw_amount = bank_amount
+                    elif gw_amount > 0:
+                        bank_amount = gw_amount
+                    diff_val = None
+                elif exc.rule_name == "MISSING_SETTLEMENT":
+                    gw_amount = 0.0
+                    diff_val = None
+                elif exc.rule_name == "MISSING_INVOICE":
+                    gw_amount = 0.0
+                    diff_val = None
+                elif exc.rule_name == "FEE_MISMATCH":
+                    if bank_amount == 0 and gw_amount > 0:
+                        bank_amount = gw_amount
+                    diff_val = None
+                elif exc.rule_name in ["LATE_SETTLEMENT", "SETTLEMENT_DELAY"]:
+                    if bank_amount == 0 and gw_amount > 0:
+                        bank_amount = gw_amount
+                    elif gw_amount == 0 and bank_amount > 0:
+                        gw_amount = bank_amount
+                    diff_val = None
+                else:
+                    diff_val = round(abs(bank_amount - gw_amount), 2) if bank_amount > 0 and gw_amount > 0 else None
+
                 exceptions_dict.append({
-                    "exception_id": exc.exception_id,
+                    "exception_id": exc.transaction_id,
                     "transaction_id": exc.transaction_id,
                     "rule_name": exc.rule_name,
-                    "severity": exc.severity,
+                    "severity": exc.severity.value if hasattr(exc.severity, "value") else str(exc.severity),
                     "title": exc.title,
                     "description": exc.description,
                     "affected_datasets": exc.affected_datasets,
                     "recommended_action": exc.recommended_action,
+                    "suggested_action": exc.recommended_action,
                     "metadata": exc.metadata,
-                    # Provide default required fields for ExceptionSummary compatibility
-                    "source": TransactionSource.BANK.value, # Dummy, we need to map this in dashboard later or extract it
-                    "amount": 0.0,
-                    "currency": "USD",
+                    "source": TransactionSource.BANK.value,
+                    "amount": round(bank_amount, 2),
+                    "gateway_amount": round(gw_amount, 2),
+                    "difference": diff_val,
+                    "currency": "INR",
                     "created_at": datetime.now(timezone.utc).isoformat()
                 })
-            
-            # Add basic fields based on records to exceptions
-            # In a real app we'd attach the real transaction source/amount.
             
             completed_at = datetime.now(timezone.utc)
             processing_time_ms = int(execution_time * 1000)

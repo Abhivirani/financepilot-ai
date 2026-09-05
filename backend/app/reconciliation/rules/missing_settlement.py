@@ -23,9 +23,9 @@ class MissingSettlementRule(BaseRule):
                         record=record,
                         severity=Severity.HIGH,
                         title="Missing Settlement",
-                        description=f"Transaction {record.transaction_id} is marked SUCCESS in Gateway but missing from Settlement.",
+                        description="Settlement record not found.",
                         affected_datasets=[DatasetName.GATEWAY.value, DatasetName.SETTLEMENT.value],
-                        recommended_action="Follow up with payment gateway for missing settlement payout.",
+                        recommended_action="Investigate Settlement Batch",
                         metadata={"gateway_status": gw_status}
                     )
                 )

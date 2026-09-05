@@ -20,14 +20,24 @@ class MetricsCalculator:
         
         duplicate_count = sum(1 for exc in exceptions if exc.rule_name == RULE_DUPLICATE)
         
-        # Calculate Financial Totals
+        # Calculate Financial Totals safely
+        total_bank_volume = sum(
+            sum(float(bk.get("amount", 0.0) or 0.0) for bk in rec.bank_records)
+            for rec in records
+        )
         total_gateway_volume = sum(
-            sum(gw.get("gross_amount", 0.0) for gw in rec.gateway_records) 
+            sum(float(gw.get("gross_amount", 0.0) or 0.0) for gw in rec.gateway_records) 
             for rec in records
         )
         total_settled_volume = sum(
-            sum(st.get("net_amount", 0.0) for st in rec.settlement_records) 
+            sum(float(st.get("net_amount", 0.0) or 0.0) for st in rec.settlement_records) 
             for rec in records
+        )
+
+        unmatched_records = [rec for rec in records if rec.transaction_id in txn_with_exceptions]
+        unmatched_volume = sum(
+            sum(float(bk.get("amount", 0.0) or 0.0) for bk in rec.bank_records)
+            for rec in unmatched_records
         )
         
         return {
@@ -38,7 +48,9 @@ class MetricsCalculator:
             "exception_rate_percentage": round(exception_rate, 2),
             "duplicate_count": duplicate_count,
             "financials": {
+                "total_bank_volume": round(total_bank_volume, 2),
                 "total_gateway_volume": round(total_gateway_volume, 2),
                 "total_settled_volume": round(total_settled_volume, 2),
+                "unmatched_volume": round(unmatched_volume, 2)
             }
         }

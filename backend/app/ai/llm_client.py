@@ -1,24 +1,14 @@
 """
-LLM Client — provider-agnostic adapter layer.
+LLM Client — provider-agnostic multi-provider adapter layer with automatic fallback.
 
 This module defines:
   1. ``LLMResponse`` — standardised response dataclass.
   2. ``BaseLLMClient`` — abstract interface every provider must implement.
-  3. ``GeminiClient`` — Google Gemini adapter (primary provider).
-  4. ``ClaudeClient`` — Anthropic Claude adapter (future provider).
-  5. ``create_llm_client()`` — factory that reads ``Settings`` and returns
-     the correct concrete client.
-
-Responsibilities:
-  - Accept a system prompt and a messages list.
-  - Call the provider's API with model / temperature / max_tokens from Settings.
-  - Return a typed ``LLMResponse`` or raise a domain-specific error.
-  - Handle retries, timeouts, and rate-limit back-off.
-
-Rules:
-  - ``ai_service.py`` NEVER imports a concrete client directly.
-    It calls ``create_llm_client()`` or receives a ``BaseLLMClient`` via DI.
-  - Each concrete client is the **only** file that imports its provider SDK.
+  3. ``GeminiClient`` — Google Gemini adapter.
+  4. ``GroqClient`` — Groq API adapter.
+  5. ``OpenRouterClient`` — OpenRouter API adapter.
+  6. ``FallbackLLMClient`` — automatic fallback chain wrapper.
+  7. ``create_llm_client()`` — factory that builds provider fallback chain.
 """
 
 from __future__ import annotations
@@ -42,6 +32,7 @@ class LLMResponse:
     input_tokens: int
     output_tokens: int
     stop_reason: str
+    provider: str = ""
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -49,13 +40,19 @@ class LLMResponse:
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class BaseLLMClient(ABC):
-    """
-    Provider-agnostic interface for LLM completion calls.
+    """Provider-agnostic interface for LLM completion calls."""
 
-    Every concrete provider (Gemini, Claude, OpenAI, local) must implement
-    ``generate()``.  The rest of the codebase programmes against this
-    interface so that swapping providers is a one-line config change.
-    """
+    @property
+    @abstractmethod
+    def name(self) -> str:
+        """Provider name."""
+        ...
+
+    @property
+    @abstractmethod
+    def model_name(self) -> str:
+        """Model identifier name."""
+        ...
 
     @abstractmethod
     async def generate(
@@ -75,13 +72,7 @@ class BaseLLMClient(ABC):
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class GeminiClient(BaseLLMClient):
-    """
-    Google Gemini adapter.
-
-    Requires:
-      - ``google-genai`` package  (pip install google-genai)
-      - ``GEMINI_API_KEY`` in environment / Settings
-    """
+    """Google Gemini adapter."""
 
     def __init__(
         self,
@@ -92,14 +83,20 @@ class GeminiClient(BaseLLMClient):
         timeout: int,
     ) -> None:
         self._api_key = api_key
-        self._model = model
+        self._model = model or "gemini-2.5-flash"
         self._default_max_tokens = default_max_tokens
         self._default_temperature = default_temperature
         self._timeout = timeout
         self._client = None
-        
-        # Setup logging
         self._logger = logging.getLogger(__name__)
+
+    @property
+    def name(self) -> str:
+        return "Gemini"
+
+    @property
+    def model_name(self) -> str:
+        return self._model
 
     def _get_client(self):
         if not self._client:
@@ -115,7 +112,6 @@ class GeminiClient(BaseLLMClient):
         max_tokens: Optional[int] = None,
         temperature: Optional[float] = None,
     ) -> LLMResponse:
-        """Call Google Gemini API."""
         import time
         from google.genai import errors, types
         from backend.app.ai.exceptions import (
@@ -125,7 +121,10 @@ class GeminiClient(BaseLLMClient):
             LLMNetworkError,
             LLMProviderError,
         )
-        # Prepare configuration
+
+        if not self._api_key or self._api_key.startswith("your_"):
+            raise LLMAuthenticationError("Gemini API key missing or invalid.")
+
         temp = temperature if temperature is not None else self._default_temperature
         tokens = max_tokens if max_tokens is not None else self._default_max_tokens
 
@@ -139,86 +138,53 @@ class GeminiClient(BaseLLMClient):
 
         client = self._get_client()
         start_time = time.time()
-        
+
         try:
-            # Using synchronous generate_content because async might require generate_content_async
-            # But the prompt says "async def generate". We will use async API:
             response = await client.aio.models.generate_content(
                 model=self._model,
                 contents=prompt,
                 config=config,
             )
-            
-            latency = time.time() - start_time
-            
+
+            latency_ms = int((time.time() - start_time) * 1000)
+
             input_tokens = 0
             output_tokens = 0
             if response.usage_metadata:
                 input_tokens = response.usage_metadata.prompt_token_count or 0
                 output_tokens = response.usage_metadata.candidates_token_count or 0
-                
-            self._logger.info(
-                f"Gemini success | Model: {self._model} | Latency: {latency:.2f}s | "
-                f"Tokens: {input_tokens} in, {output_tokens} out"
-            )
-            
-            # stop_reason not always directly accessible in simple text response, default to stop
+
             return LLMResponse(
                 content=response.text,
                 model=self._model,
                 input_tokens=input_tokens,
                 output_tokens=output_tokens,
-                stop_reason="stop"
+                stop_reason="stop",
+                provider="Gemini"
             )
-            
+
         except errors.APIError as e:
-            latency = time.time() - start_time
-            self._logger.error(f"Gemini APIError | Latency: {latency:.2f}s | Error: {str(e)}")
-            
             error_msg = str(e).lower()
             if "api_key" in error_msg or "403" in error_msg or "unauthorized" in error_msg or "forbidden" in error_msg:
                 raise LLMAuthenticationError(f"Invalid API key: {str(e)}")
-            elif "429" in error_msg or "quota" in error_msg:
+            elif "429" in error_msg or "quota" in error_msg or "unavailable" in error_msg:
                 if "quota" in error_msg:
                     raise LLMQuotaExceededError(f"Quota exceeded: {str(e)}")
-                raise LLMRateLimitError(f"Rate limited: {str(e)}")
+                raise LLMRateLimitError(f"Rate limited or unavailable: {str(e)}")
             elif "timeout" in error_msg:
                 raise LLMNetworkError(f"Network timeout: {str(e)}")
             else:
                 raise LLMProviderError(f"Gemini API error: {str(e)}")
         except Exception as e:
-            latency = time.time() - start_time
-            self._logger.error(f"Gemini unexpected error | Latency: {latency:.2f}s | Error: {str(e)}")
-            raise LLMProviderError(f"Unexpected error: {str(e)}")
-            
-    async def test_connection(self) -> bool:
-        """Send a lightweight test to verify connectivity."""
-        try:
-            response = await self.generate(
-                system="You are a test bot.",
-                messages=[{"role": "user", "content": "Reply with OK"}],
-                max_tokens=10
-            )
-            return "OK" in response.content.upper()
-        except Exception as e:
-            self._logger.warning(f"test_connection failed: {e}")
-            return False
+            raise LLMProviderError(f"Unexpected Gemini error: {str(e)}")
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# Claude provider (future)
+# Groq provider
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-class ClaudeClient(BaseLLMClient):
-    """
-    Anthropic Claude adapter (future provider).
-
-    Requires:
-      - ``anthropic`` package  (pip install anthropic)
-      - ``ANTHROPIC_API_KEY`` in environment / Settings
-
-    Implementation will be added if/when Claude is chosen as a provider.
-    """
+class GroqClient(BaseLLMClient):
+    """Groq API adapter via OpenAI-compatible REST API."""
 
     def __init__(
         self,
@@ -229,11 +195,19 @@ class ClaudeClient(BaseLLMClient):
         timeout: int,
     ) -> None:
         self._api_key = api_key
-        self._model = model
+        self._model = model or "llama-3.3-70b-versatile"
         self._default_max_tokens = default_max_tokens
         self._default_temperature = default_temperature
         self._timeout = timeout
-        # self._client = anthropic.AsyncAnthropic(api_key=api_key, timeout=timeout)
+        self._logger = logging.getLogger(__name__)
+
+    @property
+    def name(self) -> str:
+        return "Groq"
+
+    @property
+    def model_name(self) -> str:
+        return self._model
 
     async def generate(
         self,
@@ -243,11 +217,290 @@ class ClaudeClient(BaseLLMClient):
         max_tokens: Optional[int] = None,
         temperature: Optional[float] = None,
     ) -> LLMResponse:
-        """Placeholder — will call Anthropic Messages API."""
-        raise NotImplementedError(
-            "ClaudeClient.generate() is not yet implemented. "
-            "Install the anthropic SDK and provide ANTHROPIC_API_KEY to activate."
+        import time
+        import httpx
+        from backend.app.ai.exceptions import (
+            LLMAuthenticationError,
+            LLMQuotaExceededError,
+            LLMRateLimitError,
+            LLMNetworkError,
+            LLMProviderError,
         )
+
+        if not self._api_key or self._api_key.startswith("your_"):
+            raise LLMAuthenticationError("Groq API key missing or invalid.")
+
+        temp = temperature if temperature is not None else self._default_temperature
+        tokens = max_tokens if max_tokens is not None else self._default_max_tokens
+
+        formatted_messages = []
+        if system:
+            formatted_messages.append({"role": "system", "content": system})
+        for msg in messages:
+            role = msg.get("role", "user")
+            if role not in ["system", "user", "assistant"]:
+                role = "user"
+            formatted_messages.append({"role": role, "content": msg.get("content", "")})
+
+        payload = {
+            "model": self._model,
+            "messages": formatted_messages,
+            "temperature": temp,
+            "max_tokens": tokens,
+        }
+
+        headers = {
+            "Authorization": f"Bearer {self._api_key}",
+            "Content-Type": "application/json",
+        }
+
+        start_time = time.time()
+        try:
+            async with httpx.AsyncClient(timeout=float(self._timeout)) as client:
+                resp = await client.post(
+                    "https://api.groq.com/openai/v1/chat/completions",
+                    json=payload,
+                    headers=headers,
+                )
+
+            if resp.status_code == 401 or resp.status_code == 403:
+                raise LLMAuthenticationError(f"Groq auth error ({resp.status_code}): {resp.text}")
+            elif resp.status_code == 429:
+                if "quota" in resp.text.lower():
+                    raise LLMQuotaExceededError(f"Groq quota exceeded: {resp.text}")
+                raise LLMRateLimitError(f"Groq rate limit: {resp.text}")
+            elif resp.status_code >= 400:
+                raise LLMProviderError(f"Groq API error ({resp.status_code}): {resp.text}")
+
+            data = resp.json()
+            choice = data["choices"][0]
+            content = choice["message"]["content"]
+            usage = data.get("usage", {})
+            input_tokens = usage.get("prompt_tokens", 0)
+            output_tokens = usage.get("completion_tokens", 0)
+            stop_reason = choice.get("finish_reason", "stop")
+
+            return LLMResponse(
+                content=content,
+                model=self._model,
+                input_tokens=input_tokens,
+                output_tokens=output_tokens,
+                stop_reason=stop_reason,
+                provider="Groq"
+            )
+        except (LLMAuthenticationError, LLMQuotaExceededError, LLMRateLimitError, LLMProviderError):
+            raise
+        except (httpx.TimeoutException, httpx.ConnectError, httpx.NetworkError) as e:
+            raise LLMNetworkError(f"Groq network error: {str(e)}")
+        except Exception as e:
+            raise LLMProviderError(f"Groq unexpected error: {str(e)}")
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# OpenRouter provider
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class OpenRouterClient(BaseLLMClient):
+    """OpenRouter API adapter via OpenAI-compatible REST API."""
+
+    def __init__(
+        self,
+        api_key: str,
+        model: str,
+        default_max_tokens: int,
+        default_temperature: float,
+        timeout: int,
+    ) -> None:
+        self._api_key = api_key
+        self._model = model or "meta-llama/llama-3.3-70b-instruct"
+        self._default_max_tokens = default_max_tokens
+        self._default_temperature = default_temperature
+        self._timeout = timeout
+        self._logger = logging.getLogger(__name__)
+
+    @property
+    def name(self) -> str:
+        return "OpenRouter"
+
+    @property
+    def model_name(self) -> str:
+        return self._model
+
+    async def generate(
+        self,
+        *,
+        system: str,
+        messages: List[Dict[str, str]],
+        max_tokens: Optional[int] = None,
+        temperature: Optional[float] = None,
+    ) -> LLMResponse:
+        import time
+        import httpx
+        from backend.app.ai.exceptions import (
+            LLMAuthenticationError,
+            LLMQuotaExceededError,
+            LLMRateLimitError,
+            LLMNetworkError,
+            LLMProviderError,
+        )
+
+        if not self._api_key or self._api_key.startswith("your_"):
+            raise LLMAuthenticationError("OpenRouter API key missing or invalid.")
+
+        temp = temperature if temperature is not None else self._default_temperature
+        tokens = max_tokens if max_tokens is not None else self._default_max_tokens
+
+        formatted_messages = []
+        if system:
+            formatted_messages.append({"role": "system", "content": system})
+        for msg in messages:
+            role = msg.get("role", "user")
+            if role not in ["system", "user", "assistant"]:
+                role = "user"
+            formatted_messages.append({"role": role, "content": msg.get("content", "")})
+
+        payload = {
+            "model": self._model,
+            "messages": formatted_messages,
+            "temperature": temp,
+            "max_tokens": tokens,
+        }
+
+        headers = {
+            "Authorization": f"Bearer {self._api_key}",
+            "HTTP-Referer": "https://financepilot.ai",
+            "X-Title": "FinancePilot AI",
+            "Content-Type": "application/json",
+        }
+
+        start_time = time.time()
+        try:
+            async with httpx.AsyncClient(timeout=float(self._timeout)) as client:
+                resp = await client.post(
+                    "https://openrouter.ai/api/v1/chat/completions",
+                    json=payload,
+                    headers=headers,
+                )
+
+            if resp.status_code == 401 or resp.status_code == 403:
+                raise LLMAuthenticationError(f"OpenRouter auth error ({resp.status_code}): {resp.text}")
+            elif resp.status_code == 429:
+                if "quota" in resp.text.lower():
+                    raise LLMQuotaExceededError(f"OpenRouter quota exceeded: {resp.text}")
+                raise LLMRateLimitError(f"OpenRouter rate limit: {resp.text}")
+            elif resp.status_code >= 400:
+                raise LLMProviderError(f"OpenRouter API error ({resp.status_code}): {resp.text}")
+
+            data = resp.json()
+            choice = data["choices"][0]
+            content = choice["message"]["content"]
+            usage = data.get("usage", {})
+            input_tokens = usage.get("prompt_tokens", 0)
+            output_tokens = usage.get("completion_tokens", 0)
+            stop_reason = choice.get("finish_reason", "stop")
+
+            return LLMResponse(
+                content=content,
+                model=self._model,
+                input_tokens=input_tokens,
+                output_tokens=output_tokens,
+                stop_reason=stop_reason,
+                provider="OpenRouter"
+            )
+        except (LLMAuthenticationError, LLMQuotaExceededError, LLMRateLimitError, LLMProviderError):
+            raise
+        except (httpx.TimeoutException, httpx.ConnectError, httpx.NetworkError) as e:
+            raise LLMNetworkError(f"OpenRouter network error: {str(e)}")
+        except Exception as e:
+            raise LLMProviderError(f"OpenRouter unexpected error: {str(e)}")
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Multi-Provider Fallback Wrapper
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class FallbackLLMClient(BaseLLMClient):
+    """
+    Multi-provider LLM client with automatic fallback.
+
+    Iterates through a chain of primary and fallback providers.
+    Returns the first successful LLMResponse.
+    Logs structured information including latency, tokens, and fallback usage.
+    """
+
+    def __init__(self, clients: List[BaseLLMClient]) -> None:
+        if not clients:
+            raise ValueError("FallbackLLMClient requires at least one provider client.")
+        self._clients = clients
+        self._logger = logging.getLogger(__name__)
+
+    @property
+    def name(self) -> str:
+        return self._clients[0].name
+
+    @property
+    def model_name(self) -> str:
+        return self._clients[0].model_name
+
+    async def generate(
+        self,
+        *,
+        system: str,
+        messages: List[Dict[str, str]],
+        max_tokens: Optional[int] = None,
+        temperature: Optional[float] = None,
+    ) -> LLMResponse:
+        import time
+        from backend.app.ai.exceptions import LLMProviderError
+
+        last_exception = None
+        attempt = 0
+
+        for i, client in enumerate(self._clients):
+            attempt += 1
+            start_time = time.time()
+            fallback_used = "Yes" if i > 0 else "No"
+            try:
+                response = await client.generate(
+                    system=system,
+                    messages=messages,
+                    max_tokens=max_tokens,
+                    temperature=temperature,
+                )
+                latency_ms = int((time.time() - start_time) * 1000)
+
+                log_msg = (
+                    f"\n--- LLM Completion Success ---\n"
+                    f"Provider: {client.name}\n"
+                    f"Model: {client.model_name}\n"
+                    f"Latency: {latency_ms}ms\n"
+                    f"Prompt Tokens: {response.input_tokens}\n"
+                    f"Completion Tokens: {response.output_tokens}\n"
+                    f"Retry Count: {attempt - 1}\n"
+                    f"Fallback Used: {fallback_used}\n"
+                    f"-------------------------------"
+                )
+                print(log_msg)
+                self._logger.info(log_msg)
+
+                return response
+
+            except Exception as e:
+                latency_ms = int((time.time() - start_time) * 1000)
+                last_exception = e
+                err_log = (
+                    f"Provider {client.name} (Model: {client.model_name}) failed after {latency_ms}ms: {str(e)}. "
+                )
+                if i < len(self._clients) - 1:
+                    err_log += f"Falling back to {self._clients[i+1].name}..."
+                else:
+                    err_log += "All providers in fallback chain failed."
+                print(f"[LLM Fallback Warning] {err_log}")
+                self._logger.warning(err_log)
+
+        if last_exception:
+            raise last_exception
+        raise LLMProviderError("All LLM providers failed in fallback chain.")
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -257,44 +510,55 @@ class ClaudeClient(BaseLLMClient):
 def create_llm_client(
     provider: str,
     *,
-    api_key: str,
-    model: str,
-    max_tokens: int,
-    temperature: float,
-    timeout: int,
+    api_key: Optional[str] = None,
+    model: Optional[str] = None,
+    max_tokens: Optional[int] = None,
+    temperature: Optional[float] = None,
+    timeout: Optional[int] = None,
 ) -> BaseLLMClient:
     """
-    Factory that returns the correct concrete client based on ``provider``.
-
-    Called once at startup by ``AIService`` or the dependency injection layer.
-    ``ai_service.py`` never imports a concrete client — only this factory.
-
-    Supported values for ``provider``:
-      - ``"gemini"``  → ``GeminiClient``
-      - ``"anthropic"`` → ``ClaudeClient``
-
-    Raises ``ValueError`` for unknown providers.
+    Factory that initializes concrete provider clients and wraps them in
+    a FallbackLLMClient chain according to LLM_PROVIDER and fallback order.
     """
-    provider_lower = provider.strip().lower()
+    from backend.app.core.config import settings
 
-    if provider_lower == "gemini":
-        return GeminiClient(
-            api_key=api_key,
-            model=model,
-            default_max_tokens=max_tokens,
-            default_temperature=temperature,
-            timeout=timeout,
-        )
-    elif provider_lower == "anthropic":
-        return ClaudeClient(
-            api_key=api_key,
-            model=model,
-            default_max_tokens=max_tokens,
-            default_temperature=temperature,
-            timeout=timeout,
-        )
+    prov = (provider or settings.LLM_PROVIDER).strip().lower()
+
+    m_tokens = max_tokens if max_tokens is not None else settings.MAX_TOKENS
+    temp = temperature if temperature is not None else settings.TEMPERATURE
+    t_out = timeout if timeout is not None else settings.TIMEOUT
+
+    groq_c = GroqClient(
+        api_key=settings.GROQ_API_KEY,
+        model=settings.GROQ_MODEL,
+        default_max_tokens=m_tokens,
+        default_temperature=temp,
+        timeout=t_out,
+    )
+
+    openrouter_c = OpenRouterClient(
+        api_key=settings.OPENROUTER_API_KEY,
+        model=settings.OPENROUTER_MODEL,
+        default_max_tokens=m_tokens,
+        default_temperature=temp,
+        timeout=t_out,
+    )
+
+    gemini_c = GeminiClient(
+        api_key=settings.GEMINI_API_KEY or api_key or "",
+        model=settings.GEMINI_MODEL if not model or model == settings.GEMINI_MODEL else model,
+        default_max_tokens=m_tokens,
+        default_temperature=temp,
+        timeout=t_out,
+    )
+
+    if prov == "groq":
+        chain = [groq_c, openrouter_c, gemini_c]
+    elif prov == "openrouter":
+        chain = [openrouter_c, gemini_c, groq_c]
+    elif prov == "gemini":
+        chain = [gemini_c, groq_c, openrouter_c]
     else:
-        raise ValueError(
-            f"Unknown LLM provider '{provider}'. "
-            f"Supported: 'gemini', 'anthropic'."
-        )
+        chain = [groq_c, openrouter_c, gemini_c]
+
+    return FallbackLLMClient(chain)

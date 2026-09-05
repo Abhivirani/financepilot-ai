@@ -1,4 +1,5 @@
 from pydantic import BaseModel, ConfigDict
+from typing import List, Optional
 
 class AIExplainRequest(BaseModel):
     exception_id: str
@@ -16,6 +17,10 @@ class AIExplainResponseData(BaseModel):
     markdown: str
     confidence: int
     latency_ms: int
+    provider: Optional[str] = "Gemini"
+    model: Optional[str] = ""
+    input_tokens: Optional[int] = 0
+    output_tokens: Optional[int] = 0
 
 class AIDashboardSummaryResponseData(BaseModel):
     summary: str
@@ -23,6 +28,10 @@ class AIDashboardSummaryResponseData(BaseModel):
     confidence: int
     latency_ms: int
     generated_at: str
+    provider: Optional[str] = "Gemini"
+    model: Optional[str] = ""
+    input_tokens: Optional[int] = 0
+    output_tokens: Optional[int] = 0
 
 class AIChatRequest(BaseModel):
     message: str
@@ -32,6 +41,10 @@ class AIChatResponseData(BaseModel):
     confidence: int
     latency_ms: int
     generated_at: str
+    provider: Optional[str] = "Gemini"
+    model: Optional[str] = ""
+    input_tokens: Optional[int] = 0
+    output_tokens: Optional[int] = 0
 
 class AIExecutiveReportResponseData(BaseModel):
     title: str
@@ -40,3 +53,12 @@ class AIExecutiveReportResponseData(BaseModel):
     confidence: int
     latency_ms: int
     generated_at: str
+    provider: Optional[str] = "Gemini"
+    model: Optional[str] = ""
+    input_tokens: Optional[int] = 0
+    output_tokens: Optional[int] = 0
+
+class AIProviderData(BaseModel):
+    provider: str
+    model: str
+    fallback: List[str]

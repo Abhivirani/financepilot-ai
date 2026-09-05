@@ -22,7 +22,9 @@ class DashboardService:
             run_data = await self.state_store.get_run(run_id)
             
         if not run_data:
-            # Return empty dashboard instead of 404
+            if run_id:
+                raise APIException(code="RUN_NOT_FOUND", http_status=404, message=f"Run '{run_id}' not found")
+            # Return empty dashboard instead of 404 when no runs exist yet
             return DashboardResponseData(
                 run_id="empty-run",
                 generated_at=datetime.now(timezone.utc),
@@ -47,7 +49,7 @@ class DashboardService:
                     matched_amount=0.0,
                     unmatched_amount=0.0,
                     discrepancy_amount=0.0,
-                    currency="USD"
+                    currency="INR"
                 ),
                 recent_exceptions=[]
             )
@@ -66,8 +68,12 @@ class DashboardService:
         clean_tx = metrics.get("clean_transactions", 0)
         unmatched_tx = total_tx - clean_tx
         
+        m_rate = summary["match_rate"]
+        if m_rate <= 1.0 and m_rate > 0:
+            m_rate = m_rate * 100.0
+            
         dash_metrics = DashboardMetrics(
-            match_rate=summary["match_rate"],
+            match_rate=round(m_rate, 1),
             total_transactions=total_tx,
             matched_transactions=clean_tx,
             unmatched_transactions=unmatched_tx,
@@ -132,25 +138,44 @@ class DashboardService:
         
         # Financial summary - extract from metrics financials
         fin = metrics.get("financials", {})
-        total_vol = fin.get("total_gateway_volume", 0.0)
+        bank_vol = fin.get("total_bank_volume", fin.get("total_gateway_volume", 0.0))
         settled_vol = fin.get("total_settled_volume", 0.0)
+        unmatched_vol = fin.get("unmatched_volume", 0.0)
         
         financial_summary = FinancialSummary(
-            total_amount_processed=total_vol,
-            matched_amount=settled_vol,
-            unmatched_amount=total_vol - settled_vol,
-            discrepancy_amount=0.0, # Approximate or add field in metrics
-            currency="USD"
+            total_amount_processed=round(bank_vol, 2),
+            matched_amount=round(settled_vol, 2),
+            unmatched_amount=round(unmatched_vol, 2),
+            discrepancy_amount=round(abs(bank_vol - settled_vol), 2),
+            currency="INR"
         )
         
-        # Recent exceptions
+        rule_rank_map = {
+            "AMOUNT_MISMATCH": 1,
+            "FEE_MISMATCH": 2,
+            "DUPLICATE_TRANSACTION": 3,
+            "DUPLICATE": 3,
+            "MISSING_SETTLEMENT": 4,
+            "MISSING_INVOICE": 5,
+            "LATE_SETTLEMENT": 6,
+            "SETTLEMENT_DELAY": 6,
+            "ORPHAN": 7
+        }
+        sev_rank = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}
+        def sort_key(x):
+            rr = rule_rank_map.get(x.get("rule_name"), 99)
+            sr = sev_rank.get(x.get("severity"), 4)
+            tid = str(x.get("transaction_id", ""))
+            num = int(tid.replace("TXN", "")) if tid.replace("TXN", "").isdigit() else 0
+            return (sr, rr, -num)
+
+        sorted_exc = sorted(exceptions, key=sort_key)
         recent_exceptions = []
-        sorted_exc = sorted(exceptions, key=lambda x: x.get("created_at", ""), reverse=True)
-        for exc in sorted_exc[:5]:
+        for exc in sorted_exc[:12]:
             try:
                 rule_enum = RuleType(exc["rule_name"])
             except ValueError:
-                rule_enum = RuleType.MISSING_RECORD # Fallback
+                rule_enum = RuleType.MISSING_RECORD
                 
             try:
                 sev_enum = Severity(exc["severity"])
@@ -163,6 +188,10 @@ class DashboardService:
                 severity=sev_enum,
                 transaction_id=exc["transaction_id"],
                 amount=exc.get("amount", 0.0),
+                gateway_amount=exc.get("gateway_amount", 0.0),
+                difference=exc.get("difference", 0.0),
+                description=exc.get("description", ""),
+                suggested_action=exc.get("suggested_action", exc.get("recommended_action", "")),
                 created_at=datetime.fromisoformat(exc.get("created_at", datetime.now(timezone.utc).isoformat()))
             ))
             

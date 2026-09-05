@@ -17,9 +17,10 @@ export function useUpload() {
         description: "Your dataset has been validated and stored.",
       });
     },
-    onError: (error) => {
+    onError: (error: any) => {
+      const msg = error?.response?.data?.message || error?.message || "There was a problem uploading your files.";
       toast.error("Upload failed", {
-        description: error.message || "There was a problem uploading your files.",
+        description: msg,
       });
     }
   });

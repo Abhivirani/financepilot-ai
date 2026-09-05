@@ -122,27 +122,27 @@ export function ExceptionBarChart({
   // Step 4 & 5: Responsive container, rotate labels, prevent overflow
   // Step 7: Adjusted margins so labels are not cut
   return (
-    <ChartCard title={title} description={description} className="h-[400px]">
-      <div className="w-full h-[320px] mt-2 relative">
-        <ResponsiveContainer width="99%" height={320}>
+    <ChartCard title={title} description={`${description} (${totalExceptions} total)`} className="h-[460px] flex flex-col justify-between">
+      <div className="w-full h-[240px] mt-2 relative">
+        <ResponsiveContainer width="99%" height={240}>
           <BarChart
             data={processedData}
-            margin={{ top: 20, right: 20, left: -20, bottom: 80 }}
+            margin={{ top: 20, right: 20, left: -20, bottom: 60 }}
           >
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-default)" />
             <XAxis 
               dataKey="rule" 
-              tick={{ fontSize: 11, fill: "var(--text-secondary)" }}
+              tick={{ fontSize: 10, fill: "var(--text-secondary)" }}
               tickLine={false}
               axisLine={{ stroke: "var(--border-default)" }}
               interval={0}
-              angle={-45}
+              angle={-40}
               textAnchor="end"
-              height={70}
-              tickMargin={10}
+              height={55}
+              tickMargin={6}
             />
             <YAxis 
-              tick={{ fontSize: 11, fill: "var(--text-secondary)" }}
+              tick={{ fontSize: 10, fill: "var(--text-secondary)" }}
               tickLine={false}
               axisLine={false}
               allowDecimals={false}
@@ -158,6 +158,23 @@ export function ExceptionBarChart({
             </Bar>
           </BarChart>
         </ResponsiveContainer>
+      </div>
+
+      <div className="pt-2 border-t border-border-default grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
+        {processedData.map((item, idx) => {
+          const pct = totalExceptions > 0 ? ((item.count / totalExceptions) * 100).toFixed(1) : "0.0";
+          return (
+            <div key={idx} className="flex items-center justify-between">
+              <span className="flex items-center gap-1.5 truncate text-text-secondary">
+                <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }} />
+                <span className="truncate">{item.rule}</span>
+              </span>
+              <span className="font-mono font-medium text-text-primary pl-1 flex-shrink-0">
+                {item.count} <span className="text-text-muted text-[10px]">({pct}%)</span>
+              </span>
+            </div>
+          );
+        })}
       </div>
     </ChartCard>
   );

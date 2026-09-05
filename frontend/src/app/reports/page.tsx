@@ -124,13 +124,13 @@ export default function ReportsPage() {
             <div className="h-16 w-16 bg-ai/10 text-ai rounded-full flex items-center justify-center mb-4">
               <FileText className="h-8 w-8" />
             </div>
-            <h3 className="text-lg font-medium text-text-primary mb-2">No Report Generated</h3>
+            <h3 className="text-lg font-medium text-text-primary mb-2">No Reconciliation Report Available</h3>
             <p className="text-text-secondary max-w-sm mb-6">
-              Generate an intelligent executive summary of the latest reconciliation run using FinancePilot AI.
+              No reconciliation report is available because no reconciliation run has been performed yet. Upload a dataset or use the Demo Dataset to generate an executive report.
             </p>
             <Button onClick={() => generateReport()} className="bg-brand hover:bg-brand-hover text-white">
               <Sparkles className="h-4 w-4 mr-2" />
-              Generate Report
+              Generate Executive Report
             </Button>
           </CardContent>
         </Card>

@@ -18,9 +18,9 @@ class MissingInvoiceRule(BaseRule):
                     record=record,
                     severity=Severity.MEDIUM,
                     title="Missing Invoice",
-                    description=f"Transaction {record.transaction_id} exists in Gateway but has no associated Invoice.",
+                    description="Invoice record not found.",
                     affected_datasets=[DatasetName.GATEWAY.value, DatasetName.INVOICE.value],
-                    recommended_action="Investigate if the system failed to generate an invoice for the purchase.",
+                    recommended_action="Regenerate Invoice",
                 )
             )
 

@@ -1,22 +1,22 @@
 "use client";
 
 import * as React from "react";
-import { UploadCloud, File, X, CheckCircle, Database, Play } from "lucide-react";
+import { UploadCloud, File, X, CheckCircle, Database, Play, AlertTriangle } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { useUpload, useUploadDemo, useReconcile } from "@/hooks/useApi";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import { formatFileSize } from "@/lib/formatFileSize";
 
 export default function UploadPage() {
   const [files, setFiles] = React.useState<File[]>([]);
-  const { mutate: uploadFiles, isPending: isUploading, isSuccess: isUploadSuccess, data: uploadData } = useUpload();
+  const { mutate: uploadFiles, isPending: isUploading, isSuccess: isUploadSuccess, data: uploadData, error: uploadError } = useUpload();
   const { mutate: uploadDemo, isPending: isUploadingDemo, isSuccess: isDemoSuccess, data: demoData } = useUploadDemo();
   const { mutate: runReconciliation, isPending: isReconciling, isSuccess: isReconcileSuccess } = useReconcile();
   const router = useRouter();
 
   React.useEffect(() => {
     if (isReconcileSuccess) {
-      // Small delay so they can see the success state briefly before redirect
       const timeout = setTimeout(() => {
         router.push("/dashboard");
       }, 1500);
@@ -36,11 +36,17 @@ export default function UploadPage() {
     const formData = new FormData();
     files.forEach(file => {
       const name = file.name.toLowerCase();
-      if (name.includes('bank')) formData.append('bank_statement', file);
-      else if (name.includes('gateway')) formData.append('payment_gateway', file);
-      else if (name.includes('settlement')) formData.append('settlement_report', file);
-      else if (name.includes('invoice')) formData.append('invoice', file);
-      else formData.append('files', file); // fallback
+      if (name.includes('bank') || name.includes('statement')) {
+        formData.append('bank_statement', file);
+      } else if (name.includes('gateway') || name.includes('pg') || name.includes('razorpay') || name.includes('paytm')) {
+        formData.append('payment_gateway', file);
+      } else if (name.includes('settlement') || name.includes('payout')) {
+        formData.append('settlement_report', file);
+      } else if (name.includes('invoice') || name.includes('bill') || name.includes('sales')) {
+        formData.append('invoice', file);
+      }
+      // Also append to general files array for 100% backend compatibility
+      formData.append('files', file);
     });
     
     uploadFiles(formData);
@@ -63,6 +69,7 @@ export default function UploadPage() {
   
   const isAnyUploadSuccess = isUploadSuccess || isDemoSuccess;
   const isAnyUploading = isUploading || isUploadingDemo;
+  const errorMessage = (uploadError as any)?.response?.data?.message || uploadError?.message;
   
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -119,19 +126,20 @@ export default function UploadPage() {
               <h3 className="font-medium text-sm text-text-primary">Selected Files ({files.length})</h3>
               <div className="space-y-2">
                 {files.map((file, i) => (
-                  <div key={i} className="flex items-center justify-between p-3 rounded-lg border border-border-default bg-bg-surface flex-row">
+                  <div key={i} className="flex items-center justify-between p-3 rounded-lg border border-border-default bg-bg-surface flex-row shadow-xs">
                     <div className="flex items-center space-x-3">
                       <div className="p-2 bg-brand-subtle rounded text-brand">
                         <File className="h-4 w-4" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-text-primary truncate max-w-[200px] sm:max-w-xs">{file.name}</p>
-                        <p className="text-xs text-text-secondary">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                        <p className="text-sm font-medium text-text-primary truncate max-w-[220px] sm:max-w-md">{file.name}</p>
+                        <p className="text-xs text-text-secondary font-mono">{formatFileSize(file.size)}</p>
                       </div>
                     </div>
                     <button 
                       onClick={() => removeFile(i)}
                       className="p-2 text-text-secondary hover:text-crimson hover:bg-crimson-subtle rounded transition-colors"
+                      title="Remove file"
                     >
                       <X className="h-4 w-4" />
                     </button>
@@ -151,6 +159,18 @@ export default function UploadPage() {
             </div>
           )}
           
+          {errorMessage && (
+            <div className="mt-6 p-4 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900 rounded-lg flex items-start space-x-3">
+              <AlertTriangle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <h4 className="text-sm font-semibold text-rose-800 dark:text-rose-300">Upload Validation Error</h4>
+                <pre className="text-xs text-rose-700 dark:text-rose-400 mt-2 font-mono whitespace-pre-wrap leading-relaxed">
+                  {errorMessage}
+                </pre>
+              </div>
+            </div>
+          )}
+
           {isAnyUploadSuccess && !isReconcileSuccess && (
             <div className="mt-6 p-4 bg-teal-subtle border border-teal/20 rounded-lg flex items-start space-x-3">
               <CheckCircle className="h-5 w-5 text-teal shrink-0 mt-0.5" />

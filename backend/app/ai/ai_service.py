@@ -23,10 +23,18 @@ from dataclasses import dataclass
 from typing import Dict, List, Optional
 
 from backend.app.ai.llm_client import BaseLLMClient
-
-
+from backend.app.core.exceptions import APIException
 import re
 import time
+
+
+SYSTEM_PROMPT_INR = (
+    "You are FinancePilot AI. This application is built for Indian financial reconciliation. "
+    "All currency values are in Indian Rupees (INR). Always display ₹ instead of $. "
+    "Never mention dollars or USD. Use Indian numbering format whenever possible "
+    "(example: ₹1,25,000 instead of $125000 or ₹1,23,456.78)."
+)
+
 
 @dataclass(frozen=True)
 class ExplanationResult:
@@ -37,6 +45,10 @@ class ExplanationResult:
     confidence: int
     latency_ms: int
     source: str
+    provider: str = "Gemini"
+    model: str = ""
+    input_tokens: int = 0
+    output_tokens: int = 0
 
 
 @dataclass(frozen=True)
@@ -46,6 +58,10 @@ class ChatResult:
     confidence: int
     latency_ms: int
     source: str
+    provider: str = "Gemini"
+    model: str = ""
+    input_tokens: int = 0
+    output_tokens: int = 0
 
 
 @dataclass(frozen=True)
@@ -57,6 +73,10 @@ class ReportSummaryResult:
     confidence: int
     latency_ms: int
     source: str
+    provider: str = "Gemini"
+    model: str = ""
+    input_tokens: int = 0
+    output_tokens: int = 0
 
 
 class AIService:
@@ -89,11 +109,21 @@ class AIService:
             )
             
         start_time = time.time()
-        context = await self._context_builder.build_exception_context(exception_id)
+        try:
+            context = await self._context_builder.build_exception_context(exception_id)
+        except APIException:
+            return ExplanationResult(
+                summary="No reconciliation data available.",
+                markdown=f"No reconciliation exception found for ID '{exception_id}'. Upload a dataset or use the Demo Dataset to begin.",
+                confidence=0,
+                latency_ms=0,
+                source="empty_state",
+                provider="FinancePilot AI"
+            )
         messages = self._prompt_builder.build_exception_messages(context)
         
         response = await self._llm.generate(
-            system="You are an expert financial reconciliation AI assistant.",
+            system=SYSTEM_PROMPT_INR,
             messages=messages
         )
         
@@ -119,7 +149,11 @@ class AIService:
             markdown=response.content.strip(),
             confidence=confidence,
             latency_ms=latency_ms,
-            source="llm"
+            source="llm",
+            provider=response.provider or "Gemini",
+            model=response.model,
+            input_tokens=response.input_tokens,
+            output_tokens=response.output_tokens
         )
 
     # ------------------------------------------------------------------
@@ -141,11 +175,21 @@ class AIService:
             )
             
         start_time = time.time()
-        context = await self._context_builder.build_dashboard_summary_context()
+        try:
+            context = await self._context_builder.build_dashboard_summary_context()
+        except APIException:
+            return ExplanationResult(
+                summary="No reconciliation data is currently available.",
+                markdown="No reconciliation data is currently available. Upload a dataset or click 'Use Demo Dataset' to begin.",
+                confidence=0,
+                latency_ms=0,
+                source="empty_state",
+                provider="FinancePilot AI"
+            )
         messages = self._prompt_builder.build_dashboard_summary_messages(context)
         
         response = await self._llm.generate(
-            system="You are an expert financial reconciliation AI assistant.",
+            system=SYSTEM_PROMPT_INR,
             messages=messages
         )
         
@@ -168,7 +212,11 @@ class AIService:
             markdown=response.content.strip(),
             confidence=confidence,
             latency_ms=latency_ms,
-            source="llm"
+            source="llm",
+            provider=response.provider or "Gemini",
+            model=response.model,
+            input_tokens=response.input_tokens,
+            output_tokens=response.output_tokens
         )
 
     # ------------------------------------------------------------------
@@ -218,7 +266,11 @@ class AIService:
             answer=answer,
             confidence=confidence,
             latency_ms=latency_ms,
-            source="llm"
+            source="llm",
+            provider=response.provider or "Gemini",
+            model=response.model,
+            input_tokens=response.input_tokens,
+            output_tokens=response.output_tokens
         )
 
     # ------------------------------------------------------------------
@@ -243,11 +295,22 @@ class AIService:
             )
 
         start_time = time.time()
-        context = await self._context_builder.build_report_summary_context()
+        try:
+            context = await self._context_builder.build_report_summary_context()
+        except APIException:
+            return ReportSummaryResult(
+                title="Executive Reconciliation Report",
+                summary="No reconciliation data is currently available.",
+                markdown="# Executive Reconciliation Report\n\nNo reconciliation report is available because no reconciliation run has been performed yet. Upload a dataset or click 'Use Demo Dataset' to generate a report.",
+                confidence=0,
+                latency_ms=0,
+                source="empty_state",
+                provider="FinancePilot AI"
+            )
         messages = self._prompt_builder.build_report_messages(context)
         
         response = await self._llm.generate(
-            system="You are an expert financial reconciliation AI analyst.",
+            system=SYSTEM_PROMPT_INR,
             messages=messages
         )
         
@@ -271,5 +334,9 @@ class AIService:
             markdown=response.content.strip(),
             confidence=confidence,
             latency_ms=latency_ms,
-            source="llm"
+            source="llm",
+            provider=response.provider or "Gemini",
+            model=response.model,
+            input_tokens=response.input_tokens,
+            output_tokens=response.output_tokens
         )

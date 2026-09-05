@@ -22,6 +22,7 @@ from typing import Any, Dict, List, Optional
 
 from backend.app.services.state_store import StateStore
 from backend.app.core.exceptions import APIException
+from backend.app.utils.currency import format_currency
 
 @dataclass(frozen=True)
 class ExceptionContext:
@@ -150,7 +151,7 @@ class DefaultContextBuilder(ContextBuilder):
             recommended_action=exc.get("recommended_action", ""),
             metadata=exc.get("metadata", {}),
             amount=exc.get("amount", 0.0),
-            currency=exc.get("currency", "USD"),
+            currency=exc.get("currency", "INR"),
             total_exceptions=len(exceptions),
             current_match_rate=round(match_rate, 2),
         )
@@ -185,10 +186,17 @@ class DefaultContextBuilder(ContextBuilder):
             rule_distribution.append({"rule_type": rt, "count": count})
             
         fin = metrics.get("financials", {})
+        gw_vol = fin.get("total_gateway_volume", 0.0)
+        settled_vol = fin.get("total_settled_volume", 0.0)
+        unmatched_vol = gw_vol - settled_vol
         financial_summary = {
-            "total_gateway_volume": fin.get("total_gateway_volume", 0.0),
-            "total_settled_volume": fin.get("total_settled_volume", 0.0),
-            "unmatched_volume": fin.get("total_gateway_volume", 0.0) - fin.get("total_settled_volume", 0.0)
+            "currency": "INR",
+            "total_gateway_volume": format_currency(gw_vol),
+            "total_settled_volume": format_currency(settled_vol),
+            "unmatched_volume": format_currency(unmatched_vol),
+            "total_gateway_volume_raw": gw_vol,
+            "total_settled_volume_raw": settled_vol,
+            "unmatched_volume_raw": unmatched_vol,
         }
 
         source_volume = []
@@ -257,10 +265,17 @@ class DefaultContextBuilder(ContextBuilder):
             rule_distribution.append({"rule_type": rt, "count": count})
             
         fin = metrics.get("financials", {})
+        gw_vol = fin.get("total_gateway_volume", 0.0)
+        settled_vol = fin.get("total_settled_volume", 0.0)
+        unmatched_vol = gw_vol - settled_vol
         financial_summary = {
-            "total_gateway_volume": fin.get("total_gateway_volume", 0.0),
-            "total_settled_volume": fin.get("total_settled_volume", 0.0),
-            "unmatched_volume": fin.get("total_gateway_volume", 0.0) - fin.get("total_settled_volume", 0.0)
+            "currency": "INR",
+            "total_gateway_volume": format_currency(gw_vol),
+            "total_settled_volume": format_currency(settled_vol),
+            "unmatched_volume": format_currency(unmatched_vol),
+            "total_gateway_volume_raw": gw_vol,
+            "total_settled_volume_raw": settled_vol,
+            "unmatched_volume_raw": unmatched_vol,
         }
 
         source_volume = []

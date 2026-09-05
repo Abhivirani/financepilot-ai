@@ -55,18 +55,33 @@ class ExceptionService:
         # 2. Sort
         reverse = (filters.sort_order.value == "desc")
         
+        rule_rank_map = {
+            "AMOUNT_MISMATCH": 1,
+            "FEE_MISMATCH": 2,
+            "DUPLICATE_TRANSACTION": 3,
+            "DUPLICATE": 3,
+            "MISSING_SETTLEMENT": 4,
+            "MISSING_INVOICE": 5,
+            "LATE_SETTLEMENT": 6,
+            "SETTLEMENT_DELAY": 6,
+            "ORPHAN": 7
+        }
+        sev_rank = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}
+
         def sort_key(exc):
             if filters.sort_by == SortField.CREATED_AT:
-                return exc.get("created_at", "")
+                rr = rule_rank_map.get(exc.get("rule_name"), 99)
+                sr = sev_rank.get(exc.get("severity"), 4)
+                tid = str(exc.get("transaction_id", ""))
+                num = int(tid.replace("TXN", "")) if tid.replace("TXN", "").isdigit() else 0
+                return (sr, rr, -num)
             elif filters.sort_by == SortField.AMOUNT:
                 return exc.get("amount", 0.0)
             elif filters.sort_by == SortField.SEVERITY:
-                # Map to integer ordinal LOW=0, MEDIUM=1, HIGH=2, CRITICAL=3
                 sev = exc.get("severity", "LOW")
-                mapping = {"LOW": 0, "MEDIUM": 1, "HIGH": 2, "CRITICAL": 3}
-                return mapping.get(sev, 0)
+                return sev_rank.get(sev, 4)
             elif filters.sort_by == SortField.RULE_TYPE:
-                return exc.get("rule_name", "")
+                return rule_rank_map.get(exc.get("rule_name"), 99)
             return exc.get("created_at", "")
             
         filtered.sort(key=sort_key, reverse=reverse)
@@ -100,8 +115,11 @@ class ExceptionService:
                 rule_type=rule_enum,
                 severity=sev_enum,
                 amount=exc.get("amount", 0.0),
-                currency=exc.get("currency", "USD"),
+                gateway_amount=exc.get("gateway_amount", 0.0),
+                difference=exc.get("difference", 0.0),
+                currency=exc.get("currency", "INR"),
                 description=exc.get("description", ""),
+                suggested_action=exc.get("suggested_action", exc.get("recommended_action", "")),
                 created_at=datetime.fromisoformat(exc.get("created_at", datetime.now(timezone.utc).isoformat()))
             ))
             
@@ -152,7 +170,7 @@ class ExceptionService:
             transaction_id=exc.get("transaction_id", ""),
             source=TransactionSource.BANK,
             amount=exc.get("amount", 0.0),
-            currency=exc.get("currency", "USD"),
+            currency=exc.get("currency", "INR"),
             timestamp=datetime.fromisoformat(exc.get("created_at", datetime.now(timezone.utc).isoformat())),
             raw_fields=exc.get("metadata", {})
         )

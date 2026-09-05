@@ -67,6 +67,13 @@ class StateStore:
         async with self._lock:
             return self.runs.get(run_id)
 
+    async def reset(self):
+        async with self._lock:
+            self.batches.clear()
+            self.runs.clear()
+            self.latest_batch_id = None
+            self.latest_run_id = None
+
     def _evict_batches(self):
         if len(self.batches) > settings.MAX_RETAINED_BATCHES:
             # Simple eviction: pop the first (oldest) item

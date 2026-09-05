@@ -28,8 +28,11 @@ class ExceptionSummary(BaseModel):
     rule_type: RuleType
     severity: Severity
     amount: float
+    gateway_amount: Optional[float] = 0.0
+    difference: Optional[float] = 0.0
     currency: str
     description: str
+    suggested_action: Optional[str] = ""
     created_at: datetime
 
 class PaginatedExceptionsData(BaseModel):
@@ -47,7 +50,7 @@ class PaginatedExceptionsData(BaseModel):
                         "rule_type": "AMOUNT_MISMATCH",
                         "severity": "HIGH",
                         "amount": 150.0,
-                        "currency": "USD",
+                        "currency": "INR",
                         "description": "Amount mismatch between bank and gateway",
                         "created_at": "2026-09-03T09:00:00Z"
                     }
@@ -89,7 +92,7 @@ class ExceptionDetailData(BaseModel):
                     "transaction_id": "txn-456",
                     "source": "Bank",
                     "amount": 150.0,
-                    "currency": "USD",
+                    "currency": "INR",
                     "timestamp": "2026-09-03T09:00:00Z",
                     "raw_fields": {}
                 },

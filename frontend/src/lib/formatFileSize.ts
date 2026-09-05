@@ -1,0 +1,10 @@
+export function formatFileSize(bytes: number | null | undefined): string {
+  if (bytes === null || bytes === undefined || isNaN(bytes) || bytes === 0) {
+    return "0 Bytes";
+  }
+  const k = 1024;
+  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  const value = bytes / Math.pow(k, i);
+  return `${parseFloat(value.toFixed(2))} ${sizes[i]}`;
+}

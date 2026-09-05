@@ -16,11 +16,47 @@ class AmountMismatchRule(BaseRule):
             return exceptions
             
         gw = record.gateway_records[0]
-        gw_amount = gw.get("gross_amount", 0.0)
+        try:
+            gw_amount = float(gw.get("gross_amount", 0.0) or 0.0)
+        except (ValueError, TypeError):
+            gw_amount = 0.0
+
+        if record.bank_records:
+            bk = record.bank_records[0]
+            try:
+                bk_amount = float(bk.get("amount", 0.0) or 0.0)
+            except (ValueError, TypeError):
+                bk_amount = 0.0
+
+            try:
+                gw_fee = float(gw.get("fee", 0.0) or 0.0)
+            except (ValueError, TypeError):
+                gw_fee = 0.0
+
+            net_gw_amount = round(gw_amount - gw_fee, 2)
+
+            # Bank amount should match either gross_amount or net_amount (gross - fee)
+            diff_amt = round(abs(bk_amount - gw_amount), 2)
+            if abs(bk_amount - gw_amount) > 0.01 and abs(bk_amount - net_gw_amount) > 0.01:
+                exceptions.append(
+                    self._create_exception(
+                        record=record,
+                        severity=Severity.HIGH,
+                        title="Amount Mismatch",
+                        description=f"Bank: ₹{bk_amount:,.2f}, Gateway: ₹{gw_amount:,.2f}, Difference: ₹{diff_amt:,.2f}",
+                        affected_datasets=[DatasetName.BANK.value, DatasetName.GATEWAY.value],
+                        recommended_action="Manual Review",
+                        metadata={"bank_amount": bk_amount, "gateway_amount": gw_amount, "difference": diff_amt}
+                    )
+                )
 
         if record.invoice_records:
             inv = record.invoice_records[0]
-            inv_amount = inv.get("total_amount", 0.0)
+            try:
+                inv_amount = float(inv.get("total_amount", 0.0) or 0.0)
+            except (ValueError, TypeError):
+                inv_amount = 0.0
+
             if abs(gw_amount - inv_amount) > 0.01:
                 exceptions.append(
                     self._create_exception(
@@ -36,7 +72,11 @@ class AmountMismatchRule(BaseRule):
                 
         if record.settlement_records:
             st = record.settlement_records[0]
-            st_amount = st.get("gross_amount", 0.0)
+            try:
+                st_amount = float(st.get("gross_amount", 0.0) or 0.0)
+            except (ValueError, TypeError):
+                st_amount = 0.0
+
             if abs(gw_amount - st_amount) > 0.01:
                 exceptions.append(
                     self._create_exception(

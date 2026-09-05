@@ -24,15 +24,20 @@ class Settings(BaseSettings):
     MATCH_AMOUNT_TOLERANCE: float = 0.01
     
     # ── LLM / AI settings ──────────────────────────────────
-    # Provider selection — "gemini" | "anthropic"
+    # Provider selection — "gemini" | "groq" | "openrouter"
     LLM_PROVIDER: str = "gemini"
     
-    # API keys (only the active provider's key needs to be set)
+    # API keys
     GEMINI_API_KEY: str = ""
-    ANTHROPIC_API_KEY: str = ""      # future / fallback
+    GROQ_API_KEY: str = ""
+    OPENROUTER_API_KEY: str = ""
+    ANTHROPIC_API_KEY: str = ""
     
     # Model configuration
-    GEMINI_MODEL: str = "gemini-3.5-flash"
+    GEMINI_MODEL: str = "gemini-3.6-flash"
+    GROQ_MODEL: str = "groq/compound-mini"
+    OPENROUTER_MODEL: str = "meta-llama/llama-3.3-70b-instruct"
+    
     TEMPERATURE: float = 0.2
     MAX_TOKENS: int = 1500
     TIMEOUT: int = 30           # seconds

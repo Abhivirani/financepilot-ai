@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict
-from typing import List
+from typing import List, Optional
 from datetime import datetime
 
 from backend.app.schemas.common import RuleType, Severity
@@ -41,6 +41,10 @@ class ExceptionPreview(BaseModel):
     severity: Severity
     transaction_id: str
     amount: float
+    gateway_amount: Optional[float] = 0.0
+    difference: Optional[float] = 0.0
+    description: Optional[str] = ""
+    suggested_action: Optional[str] = ""
     created_at: datetime
 
 class DashboardResponseData(BaseModel):
@@ -84,7 +88,7 @@ class DashboardResponseData(BaseModel):
                     "matched_amount": 48000.0,
                     "unmatched_amount": 2000.0,
                     "discrepancy_amount": 0.0,
-                    "currency": "USD"
+                    "currency": "INR"
                 },
                 "recent_exceptions": []
             }

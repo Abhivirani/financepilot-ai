@@ -124,7 +124,9 @@ class PromptBuilder:
     def get_system_prompt(self, ctx: Optional[ChatContext] = None) -> str:
         """Return the system prompt used for all chat completions."""
         if not ctx or not ctx.dashboard_context:
-            return Template(self._chat_system).safe_substitute(dashboard_context="No recent dashboard context available.")
+            return Template(self._chat_system).safe_substitute(
+                dashboard_context="No reconciliation data is currently available. Inform the user: 'No reconciliation data is currently available. Upload a dataset or use the Demo Dataset to begin.'"
+            )
             
         dash = ctx.dashboard_context
         dash_str = (

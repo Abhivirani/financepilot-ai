@@ -14,6 +14,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { exceptionsService } from "@/lib/api/services/exceptions";
 
 import { ExplainDialog } from "@/components/ai/ExplainDialog";
+import { formatCurrency } from "@/lib/formatCurrency";
 
 export default function ExceptionsPage() {
   const queryClient = useQueryClient();
@@ -88,12 +89,77 @@ export default function ExceptionsPage() {
   });
 
   const columns = [
-    { header: "Exception ID", accessorKey: "exception_id", className: "font-mono font-medium text-xs text-brand truncate max-w-[120px]" },
-    { header: "Transaction ID", accessorKey: "transaction_id", className: "font-mono text-xs text-text-secondary truncate max-w-[120px]" },
-    { header: "Rule Violated", accessorKey: "rule_type" },
+    { 
+      header: "Transaction ID", 
+      accessorKey: "transaction_id", 
+      className: "font-mono font-medium text-xs text-brand whitespace-nowrap px-2 py-2" 
+    },
+    { 
+      header: "Rule Type", 
+      accessorKey: "rule_type",
+      className: "font-medium text-xs whitespace-nowrap px-2 py-2",
+      cell: (row: any) => {
+        const ruleMap: Record<string, string> = {
+          "AMOUNT_MISMATCH": "Amount Mismatch",
+          "FEE_MISMATCH": "Fee Mismatch",
+          "MISSING_SETTLEMENT": "Missing Settlement",
+          "DUPLICATE_TRANSACTION": "Duplicate Gateway",
+          "DUPLICATE": "Duplicate Gateway",
+          "MISSING_INVOICE": "Missing Invoice",
+          "LATE_SETTLEMENT": "Settlement Delay",
+          "ORPHAN": "Orphan Record"
+        };
+        const raw = String(row.rule_type);
+        return ruleMap[raw] || raw.replace(/_/g, " ");
+      }
+    },
+    { 
+      header: "Bank Amount", 
+      accessorKey: "amount", 
+      className: "text-right font-mono text-xs font-medium whitespace-nowrap px-2 py-2",
+      cell: (row: any) => formatCurrency(row.amount || 0)
+    },
+    { 
+      header: "Gateway Amount", 
+      accessorKey: "gateway_amount", 
+      className: "text-right font-mono text-xs text-text-secondary whitespace-nowrap px-3 py-2",
+      cell: (row: any) => row.gateway_amount > 0 ? formatCurrency(row.gateway_amount) : "—"
+    },
+    { 
+      header: "Difference", 
+      accessorKey: "difference", 
+      className: "text-right font-mono text-xs font-medium whitespace-nowrap px-3 py-2",
+      cell: (row: any) => {
+        const rawRule = String(row.rule_type);
+        if (rawRule === "FEE_MISMATCH") {
+          return <span className="text-text-muted">N/A</span>;
+        }
+        if (row.difference === null || row.difference === undefined) {
+          return <span className="text-text-muted">—</span>;
+        }
+        const diff = Number(row.difference || 0);
+        if (diff === 0) {
+          return <span className="text-text-muted">₹0.00</span>;
+        }
+        return <span className="text-crimson font-medium">{formatCurrency(diff)}</span>;
+      }
+    },
+    { 
+      header: "Reason", 
+      accessorKey: "description",
+      className: "text-xs text-text-secondary min-w-[260px] whitespace-normal px-3 py-2",
+      cell: (row: any) => row.description || row.title || "-"
+    },
+    { 
+      header: "Suggested Action", 
+      accessorKey: "suggested_action",
+      className: "text-xs text-text-muted min-w-[170px] whitespace-nowrap px-3 py-2",
+      cell: (row: any) => row.suggested_action || row.recommended_action || "Manual Review"
+    },
     { 
       header: "Severity", 
       accessorKey: "severity",
+      className: "whitespace-nowrap px-2 py-2",
       cell: (row: any) => {
         const severityMap: Record<string, "error" | "warning" | "info" | "neutral"> = {
           CRITICAL: "error",
@@ -104,28 +170,10 @@ export default function ExceptionsPage() {
         return <StatusBadge status={severityMap[row.severity] || "neutral"} label={row.severity} />;
       }
     },
-    { 
-      header: "Status", 
-      accessorKey: "status",
-      cell: (row: any) => {
-        const statusMap: Record<string, "success" | "warning" | "error" | "info" | "neutral"> = {
-          OPEN: "error",
-          IN_PROGRESS: "warning",
-          RESOLVED: "success"
-        };
-        return <StatusBadge status={statusMap[row.status] || "neutral"} label={row.status} />;
-      }
-    },
-    { 
-      header: "Created", 
-      accessorKey: "created_at", 
-      className: "text-right text-sm hidden md:table-cell",
-      cell: (row: any) => format(new Date(row.created_at), "MMM d, HH:mm")
-    },
     {
       header: "Actions",
       accessorKey: "actions",
-      className: "text-right",
+      className: "text-right whitespace-nowrap px-2 py-2",
       cell: (row: any) => (
         <Button 
           variant="ghost" 
@@ -165,7 +213,7 @@ export default function ExceptionsPage() {
             disabled={autoResolveMutation.isPending || isLoading}
           >
             {autoResolveMutation.isPending ? <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> : <Sparkles className="h-4 w-4 mr-2" />}
-            Auto-Resolve (2)
+            Auto-Resolve
           </Button>
         </div>
       </div>

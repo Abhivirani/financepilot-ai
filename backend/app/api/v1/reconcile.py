@@ -16,3 +16,8 @@ async def reconcile_batch(
 ):
     result = await reconciliation_service.reconcile(request)
     return SuccessResponse(data=result)
+
+@router.post("/reset", response_model=SuccessResponse[dict])
+async def reset_state(state_store = Depends(get_state_store)):
+    await state_store.reset()
+    return SuccessResponse(data={"message": "Application state reset to empty state successfully"})

@@ -17,6 +17,7 @@ async def get_settings(
     return SuccessResponse(data=result)
 
 @router.put("/settings", response_model=SuccessResponse[SettingsData])
+@router.patch("/settings", response_model=SuccessResponse[SettingsData])
 async def update_settings(
     settings_data: SettingsData,
     settings_service: SettingsService = Depends(get_settings_service)
