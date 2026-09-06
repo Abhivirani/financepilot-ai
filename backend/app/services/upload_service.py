@@ -68,7 +68,7 @@ class UploadService:
             
         df = df.rename(columns=cleaned_cols)
 
-        # Intelligently synthesize missing required columns where standard defaults apply
+        # Synthesize optional default columns if missing
         if "type" in expected_cols and "type" not in df.columns:
             df["type"] = "CREDIT"
         if "fee" in expected_cols and "fee" not in df.columns:
@@ -77,31 +77,6 @@ class UploadService:
             df["fee_deducted"] = 0.0
         if "status" in expected_cols and "status" not in df.columns:
             df["status"] = "SUCCESS"
-        if "transaction_id" in expected_cols and "transaction_id" not in df.columns:
-            for alt_id in ["bank_txn_id", "gateway_txn_id", "settlement_id", "invoice_id", "reference_id", "order_id"]:
-                if alt_id in df.columns:
-                    df["transaction_id"] = df[alt_id]
-                    break
-        if "gateway_txn_id" in expected_cols and "gateway_txn_id" not in df.columns:
-            for alt_id in ["transaction_id", "settlement_id", "order_id", "bank_txn_id"]:
-                if alt_id in df.columns:
-                    df["gateway_txn_id"] = df[alt_id]
-                    break
-        if "gross_amount" in expected_cols and "gross_amount" not in df.columns:
-            for alt_amt in ["net_amount", "amount", "total_amount"]:
-                if alt_amt in df.columns:
-                    df["gross_amount"] = df[alt_amt]
-                    break
-        if "net_amount" in expected_cols and "net_amount" not in df.columns:
-            for alt_amt in ["gross_amount", "amount", "total_amount"]:
-                if alt_amt in df.columns:
-                    df["net_amount"] = df[alt_amt]
-                    break
-        if "total_amount" in expected_cols and "total_amount" not in df.columns:
-            for alt_amt in ["amount", "gross_amount", "net_amount"]:
-                if alt_amt in df.columns:
-                    df["total_amount"] = df[alt_amt]
-                    break
 
         return df
 
@@ -286,13 +261,12 @@ class UploadService:
             async with aiofiles.open(batch_dir / expected_filename, 'wb') as out_file:
                 await out_file.write(content)
                 
-        # Write default headers for missing sources so engine won't crash
-        for source_type, required_cols in self.required_columns.items():
-            if source_type not in valid_contents:
-                expected_filename = f"{source_type.value}.csv"
-                header = ",".join(list(required_cols)) + "\n"
-                async with aiofiles.open(batch_dir / expected_filename, 'w') as out_file:
-                    await out_file.write(header)
+        print(f"\nUpload Complete")
+        print(f"Batch ID: {batch_id}")
+        print("Saved Files:")
+        for source_type in valid_contents.keys():
+            expected_filename = f"{source_type.value}.csv"
+            print(f"{expected_filename}")
         
         return UploadResponseData(
             batch_id=batch_id,

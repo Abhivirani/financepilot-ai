@@ -66,8 +66,15 @@ class DatasetLoader:
             self._validate_file_exists(filepath)
             
             df = pd.read_csv(filepath)
+            if len(df) == 0:
+                raise ValueError(f"{filename} contains no records.")
+                
             self._validate_columns(df, name)
             df = normalizer(df)
+            
+            print(f"Dataset : {name.value}")
+            print(f"Rows : {len(df)}")
+            print(f"Columns :\n{list(df.columns)}")
             
             datasets[name] = df
             

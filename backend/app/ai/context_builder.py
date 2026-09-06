@@ -186,17 +186,20 @@ class DefaultContextBuilder(ContextBuilder):
             rule_distribution.append({"rule_type": rt, "count": count})
             
         fin = metrics.get("financials", {})
-        gw_vol = fin.get("total_gateway_volume", 0.0)
-        settled_vol = fin.get("total_settled_volume", 0.0)
-        unmatched_vol = gw_vol - settled_vol
+        total_amt = fin.get("total_amount_processed", fin.get("total_bank_volume", 0.0))
+        matched_amt = fin.get("matched_amount", fin.get("total_settled_volume", 0.0))
+        unmatched_amt = fin.get("unmatched_amount", fin.get("unmatched_volume", 0.0))
+        discrepancy_amt = fin.get("discrepancy_amount", round(abs(total_amt - matched_amt), 2))
         financial_summary = {
             "currency": "INR",
-            "total_gateway_volume": format_currency(gw_vol),
-            "total_settled_volume": format_currency(settled_vol),
-            "unmatched_volume": format_currency(unmatched_vol),
-            "total_gateway_volume_raw": gw_vol,
-            "total_settled_volume_raw": settled_vol,
-            "unmatched_volume_raw": unmatched_vol,
+            "total_amount_processed": format_currency(total_amt),
+            "matched_amount": format_currency(matched_amt),
+            "unmatched_amount": format_currency(unmatched_amt),
+            "discrepancy_amount": format_currency(discrepancy_amt),
+            "total_amount_processed_raw": total_amt,
+            "matched_amount_raw": matched_amt,
+            "unmatched_amount_raw": unmatched_amt,
+            "discrepancy_amount_raw": discrepancy_amt,
         }
 
         source_volume = []
@@ -265,17 +268,20 @@ class DefaultContextBuilder(ContextBuilder):
             rule_distribution.append({"rule_type": rt, "count": count})
             
         fin = metrics.get("financials", {})
-        gw_vol = fin.get("total_gateway_volume", 0.0)
-        settled_vol = fin.get("total_settled_volume", 0.0)
-        unmatched_vol = gw_vol - settled_vol
+        total_amt = fin.get("total_amount_processed", fin.get("total_bank_volume", 0.0))
+        matched_amt = fin.get("matched_amount", fin.get("total_settled_volume", 0.0))
+        unmatched_amt = fin.get("unmatched_amount", fin.get("unmatched_volume", 0.0))
+        discrepancy_amt = fin.get("discrepancy_amount", round(abs(total_amt - matched_amt), 2))
         financial_summary = {
             "currency": "INR",
-            "total_gateway_volume": format_currency(gw_vol),
-            "total_settled_volume": format_currency(settled_vol),
-            "unmatched_volume": format_currency(unmatched_vol),
-            "total_gateway_volume_raw": gw_vol,
-            "total_settled_volume_raw": settled_vol,
-            "unmatched_volume_raw": unmatched_vol,
+            "total_amount_processed": format_currency(total_amt),
+            "matched_amount": format_currency(matched_amt),
+            "unmatched_amount": format_currency(unmatched_amt),
+            "discrepancy_amount": format_currency(discrepancy_amt),
+            "total_amount_processed_raw": total_amt,
+            "matched_amount_raw": matched_amt,
+            "unmatched_amount_raw": unmatched_amt,
+            "discrepancy_amount_raw": discrepancy_amt,
         }
 
         source_volume = []

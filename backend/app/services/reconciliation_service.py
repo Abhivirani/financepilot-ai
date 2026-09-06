@@ -19,6 +19,7 @@ from backend.app.reconciliation.rules import get_all_rules
 from backend.app.reconciliation.metrics import MetricsCalculator
 from backend.app.reconciliation.report import ReportGenerator, JsonReportExporter
 from backend.app.reconciliation.exceptions import ReconciliationResult
+from backend.app.reconciliation.constants import DatasetName
 from backend.app.schemas.common import TransactionSource
 
 class ReconciliationService:
@@ -60,10 +61,33 @@ class ReconciliationService:
             metrics_calc = MetricsCalculator()
             
             # 1. Load Data
-            datasets = loader.load_all()
-            
+            try:
+                datasets = loader.load_all()
+            except (ValueError, FileNotFoundError) as ve:
+                err_msg = str(ve)
+                for src in ["Bank", "Gateway", "Settlement", "Invoice"]:
+                    if src.lower() in err_msg.lower():
+                        raise APIException("EMPTY_DATASET", 400, f"Uploaded {src} dataset contains zero records.")
+                raise APIException("EMPTY_DATASET", 400, err_msg)
+
+            # Pre-validation check: verify every required dataset exists and has > 0 rows
+            required_names = [
+                (DatasetName.BANK, "Bank"),
+                (DatasetName.GATEWAY, "Gateway"),
+                (DatasetName.SETTLEMENT, "Settlement"),
+                (DatasetName.INVOICE, "Invoice")
+            ]
+            for ds_key, ds_name in required_names:
+                if ds_key not in datasets or len(datasets[ds_key]) == 0:
+                    raise APIException("EMPTY_DATASET", 400, f"Uploaded {ds_name} dataset contains zero records.")
+
+            print("\nLoaded Files")
+            for ds_key, ds_name in required_names:
+                print(f"{ds_name}.csv -> {len(datasets[ds_key])} rows")
+
             # 2. Match
             matched_records = matcher.match(datasets)
+            print(f"\nMatched Records\n{len(matched_records)}")
             
             # 3. Rules
             all_exceptions = []
@@ -74,8 +98,12 @@ class ReconciliationService:
                     exceptions = rule.check(record)
                     all_exceptions.extend(exceptions)
                     
+            print(f"\nExceptions\n{len(all_exceptions)}")
+
             # 4. Metrics
             metrics = metrics_calc.calculate(matched_records, all_exceptions)
+            print("\nMetrics")
+            print(json.dumps(metrics, indent=2))
             
             execution_time = time.time() - started_at.timestamp()
             engine_summary = {
@@ -90,13 +118,7 @@ class ReconciliationService:
                 if f["is_valid"]:
                     sources_processed.append(TransactionSource(f["source_type"]))
             
-            # Calculate matched count from metrics structure
-            # clean_transactions = match_status MATCHED + partially matched? 
-            # Metrics returns clean_transactions = total - matched with exception.
-            # We will use clean_transactions as matched_count or compute it properly.
-            
-            # Let's see metrics shape:
-            matched_count = metrics["clean_transactions"] # Approximation for summary
+            matched_count = metrics["matched_transactions"]
             
             summary = ReconcileSummary(
                 total_transactions=len(matched_records),
@@ -200,6 +222,8 @@ class ReconciliationService:
                 summary=summary
             )
             
+        except APIException:
+            raise
         except Exception as e:
             # We must fail gracefully.
             raise APIException("ENGINE_FAILURE", 500, "Reconciliation engine failed unexpectedly.", [{"field": None, "issue": str(e)}])

@@ -2,20 +2,25 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ApiService } from '@/lib/api/services';
 import { toast } from 'sonner';
 
-export function useDashboard() {
+export function useDashboard(runId?: string) {
   return useQuery<any>({
-    queryKey: ['dashboard'],
-    queryFn: () => ApiService.dashboard.get(),
+    queryKey: ['dashboard', runId],
+    queryFn: () => ApiService.dashboard.get(runId),
   });
 }
 
 export function useUpload() {
+  const queryClient = useQueryClient();
   return useMutation<any, Error, FormData>({
     mutationFn: (formData: FormData) => ApiService.upload.uploadFiles(formData),
     onSuccess: () => {
-      toast.success("Files uploaded successfully", {
-        description: "Your dataset has been validated and stored.",
+      toast.success("Files uploaded & reconciled successfully", {
+        description: "Your dataset has been processed by the reconciliation engine.",
       });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-ai-summary'] });
+      queryClient.invalidateQueries({ queryKey: ['exceptions'] });
+      queryClient.invalidateQueries({ queryKey: ['reports'] });
     },
     onError: (error: any) => {
       const msg = error?.response?.data?.message || error?.message || "There was a problem uploading your files.";
@@ -31,7 +36,11 @@ export function useUploadDemo() {
   return useMutation<any, Error, void>({
     mutationFn: () => ApiService.upload.uploadDemo(),
     onSuccess: (data) => {
-      toast.success("Demo dataset generated and uploaded successfully");
+      toast.success("Demo dataset generated and reconciled successfully");
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-ai-summary'] });
+      queryClient.invalidateQueries({ queryKey: ['exceptions'] });
+      queryClient.invalidateQueries({ queryKey: ['reports'] });
       return data;
     },
     onError: (error) => {

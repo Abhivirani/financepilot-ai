@@ -138,15 +138,16 @@ class DashboardService:
         
         # Financial summary - extract from metrics financials
         fin = metrics.get("financials", {})
-        bank_vol = fin.get("total_bank_volume", fin.get("total_gateway_volume", 0.0))
-        settled_vol = fin.get("total_settled_volume", 0.0)
-        unmatched_vol = fin.get("unmatched_volume", 0.0)
+        total_amt = fin.get("total_amount_processed", fin.get("total_bank_volume", 0.0))
+        matched_amt = fin.get("matched_amount", fin.get("total_settled_volume", 0.0))
+        unmatched_amt = fin.get("unmatched_amount", fin.get("unmatched_volume", 0.0))
+        discrepancy_amt = fin.get("discrepancy_amount", round(abs(total_amt - matched_amt), 2))
         
         financial_summary = FinancialSummary(
-            total_amount_processed=round(bank_vol, 2),
-            matched_amount=round(settled_vol, 2),
-            unmatched_amount=round(unmatched_vol, 2),
-            discrepancy_amount=round(abs(bank_vol - settled_vol), 2),
+            total_amount_processed=round(total_amt, 2),
+            matched_amount=round(matched_amt, 2),
+            unmatched_amount=round(unmatched_amt, 2),
+            discrepancy_amount=round(discrepancy_amt, 2),
             currency="INR"
         )
         

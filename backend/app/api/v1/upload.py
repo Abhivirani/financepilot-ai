@@ -5,13 +5,18 @@ import csv
 
 from backend.app.schemas.upload import UploadResponseData
 from backend.app.schemas.common import SuccessResponse
+from backend.app.schemas.reconcile import ReconcileRequest
 from backend.app.services.upload_service import UploadService
+from backend.app.services.reconciliation_service import ReconciliationService
 from backend.app.core.dependencies import get_state_store
 
 router = APIRouter()
 
 def get_upload_service(state_store = Depends(get_state_store)) -> UploadService:
     return UploadService(state_store)
+
+def get_reconciliation_service(state_store = Depends(get_state_store)) -> ReconciliationService:
+    return ReconciliationService(state_store)
 
 async def auto_assign_files(
     bank_statement: Optional[UploadFile],

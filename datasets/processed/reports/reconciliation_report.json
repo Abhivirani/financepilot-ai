@@ -1,1865 +1,221 @@
 {
   "summary": {
-    "execution_time_seconds": 0.04,
+    "execution_time_seconds": 0.02,
     "total_rules_applied": 9
   },
   "metrics": {
-    "total_transactions": 505,
-    "clean_transactions": 405,
-    "total_exceptions": 115,
-    "match_rate_percentage": 80.2,
-    "exception_rate_percentage": 19.8,
-    "duplicate_count": 10,
+    "total_transactions": 50,
+    "clean_transactions": 38,
+    "total_exceptions": 12,
+    "match_rate_percentage": 76.0,
+    "exception_rate_percentage": 24.0,
+    "duplicate_count": 2,
     "financials": {
-      "total_gateway_volume": 1286294.7,
-      "total_settled_volume": 1185465.39
+      "total_bank_volume": 468600.81,
+      "total_gateway_volume": 489324.72,
+      "total_settled_volume": 447827.04,
+      "unmatched_volume": 88954.94
     }
   },
   "exceptions": [
     {
-      "transaction_id": "TXN_142C3FE8",
-      "rule_name": "LATE_SETTLEMENT",
-      "severity": "LOW",
-      "title": "Late Settlement",
-      "description": "Settlement took 6 days, exceeding the SLA of 2 days.",
+      "transaction_id": "TXN1039",
+      "rule_name": "AMOUNT_MISMATCH",
+      "severity": "HIGH",
+      "title": "Amount Mismatch",
+      "description": "Bank: \u20b911,145.50, Gateway: \u20b911,074.38, Difference: \u20b971.12",
       "affected_datasets": [
-        "Gateway",
-        "Settlement"
+        "Bank",
+        "Gateway"
       ],
-      "recommended_action": "Monitor for systemic delays and negotiate SLA credits if recurring.",
+      "recommended_action": "Manual Review",
       "metadata": {
-        "delay_days": 6,
-        "allowed_days": 2
+        "bank_amount": 11145.5,
+        "gateway_amount": 11074.38,
+        "difference": 71.12
       },
-      "exception_id": "EXC_9E2B6B94"
+      "exception_id": "EXC_04A7C425"
     },
     {
-      "transaction_id": "TXN_F6E07CC0",
-      "rule_name": "LATE_SETTLEMENT",
-      "severity": "LOW",
-      "title": "Late Settlement",
-      "description": "Settlement took 4 days, exceeding the SLA of 2 days.",
+      "transaction_id": "TXN1040",
+      "rule_name": "AMOUNT_MISMATCH",
+      "severity": "HIGH",
+      "title": "Amount Mismatch",
+      "description": "Bank: \u20b91,879.99, Gateway: \u20b91,745.53, Difference: \u20b9134.46",
       "affected_datasets": [
-        "Gateway",
-        "Settlement"
+        "Bank",
+        "Gateway"
       ],
-      "recommended_action": "Monitor for systemic delays and negotiate SLA credits if recurring.",
+      "recommended_action": "Manual Review",
       "metadata": {
-        "delay_days": 4,
-        "allowed_days": 2
+        "bank_amount": 1879.99,
+        "gateway_amount": 1745.53,
+        "difference": 134.46
       },
-      "exception_id": "EXC_15AEC02E"
+      "exception_id": "EXC_8091FE57"
     },
     {
-      "transaction_id": "TXN_122C9A56",
+      "transaction_id": "TXN1041",
+      "rule_name": "AMOUNT_MISMATCH",
+      "severity": "HIGH",
+      "title": "Amount Mismatch",
+      "description": "Bank: \u20b94,114.50, Gateway: \u20b93,967.79, Difference: \u20b9146.71",
+      "affected_datasets": [
+        "Bank",
+        "Gateway"
+      ],
+      "recommended_action": "Manual Review",
+      "metadata": {
+        "bank_amount": 4114.5,
+        "gateway_amount": 3967.79,
+        "difference": 146.71
+      },
+      "exception_id": "EXC_315ECE24"
+    },
+    {
+      "transaction_id": "TXN1042",
+      "rule_name": "AMOUNT_MISMATCH",
+      "severity": "HIGH",
+      "title": "Amount Mismatch",
+      "description": "Bank: \u20b97,453.00, Gateway: \u20b97,393.22, Difference: \u20b959.78",
+      "affected_datasets": [
+        "Bank",
+        "Gateway"
+      ],
+      "recommended_action": "Manual Review",
+      "metadata": {
+        "bank_amount": 7453.0,
+        "gateway_amount": 7393.22,
+        "difference": 59.78
+      },
+      "exception_id": "EXC_BE3DB6F0"
+    },
+    {
+      "transaction_id": "TXN1043",
       "rule_name": "FEE_MISMATCH",
-      "severity": "MEDIUM",
+      "severity": "HIGH",
       "title": "Fee Mismatch",
-      "description": "Gateway fee 59.01 does not match Settlement fee deducted 63.97.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Review gateway pricing agreement and dispute incorrect fee deductions.",
-      "metadata": {
-        "gateway_fee": 59.01,
-        "settlement_fee": 63.97
-      },
-      "exception_id": "EXC_9F9F6EAD"
-    },
-    {
-      "transaction_id": "TXN_1EE34DC4",
-      "rule_name": "LATE_SETTLEMENT",
-      "severity": "LOW",
-      "title": "Late Settlement",
-      "description": "Settlement took 6 days, exceeding the SLA of 2 days.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Monitor for systemic delays and negotiate SLA credits if recurring.",
-      "metadata": {
-        "delay_days": 6,
-        "allowed_days": 2
-      },
-      "exception_id": "EXC_34C76D9E"
-    },
-    {
-      "transaction_id": "TXN_4D6168BD",
-      "rule_name": "AMOUNT_MISMATCH",
-      "severity": "HIGH",
-      "title": "Gateway/Invoice Amount Mismatch",
-      "description": "Gateway amount 1405.54 does not match Invoice amount 1346.03.",
-      "affected_datasets": [
-        "Gateway",
-        "Invoice"
-      ],
-      "recommended_action": "Verify product pricing or discount application.",
-      "metadata": {
-        "gateway_amount": 1405.54,
-        "invoice_amount": 1346.03
-      },
-      "exception_id": "EXC_B2772600"
-    },
-    {
-      "transaction_id": "TXN_4D6168BD",
-      "rule_name": "AMOUNT_MISMATCH",
-      "severity": "HIGH",
-      "title": "Gateway/Settlement Amount Mismatch",
-      "description": "Gateway amount 1405.54 does not match Settlement gross amount 1346.03.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Dispute captured amount with payment gateway.",
-      "metadata": {
-        "gateway_amount": 1405.54,
-        "settlement_gross": 1346.03
-      },
-      "exception_id": "EXC_F279E5D5"
-    },
-    {
-      "transaction_id": "TXN_2812859A",
-      "rule_name": "MISSING_INVOICE",
-      "severity": "MEDIUM",
-      "title": "Missing Invoice",
-      "description": "Transaction TXN_2812859A exists in Gateway but has no associated Invoice.",
-      "affected_datasets": [
-        "Gateway",
-        "Invoice"
-      ],
-      "recommended_action": "Investigate if the system failed to generate an invoice for the purchase.",
-      "metadata": {},
-      "exception_id": "EXC_C1763D3C"
-    },
-    {
-      "transaction_id": "TXN_1723199D",
-      "rule_name": "LATE_SETTLEMENT",
-      "severity": "LOW",
-      "title": "Late Settlement",
-      "description": "Settlement took 5 days, exceeding the SLA of 2 days.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Monitor for systemic delays and negotiate SLA credits if recurring.",
-      "metadata": {
-        "delay_days": 5,
-        "allowed_days": 2
-      },
-      "exception_id": "EXC_060964AE"
-    },
-    {
-      "transaction_id": "TXN_9A4A99B2",
-      "rule_name": "FEE_MISMATCH",
-      "severity": "MEDIUM",
-      "title": "Fee Mismatch",
-      "description": "Gateway fee 66.04 does not match Settlement fee deducted 70.97.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Review gateway pricing agreement and dispute incorrect fee deductions.",
-      "metadata": {
-        "gateway_fee": 66.04,
-        "settlement_fee": 70.97
-      },
-      "exception_id": "EXC_11C57E23"
-    },
-    {
-      "transaction_id": "TXN_D436A7A8",
-      "rule_name": "AMOUNT_MISMATCH",
-      "severity": "HIGH",
-      "title": "Gateway/Invoice Amount Mismatch",
-      "description": "Gateway amount 857.07 does not match Invoice amount 833.98.",
-      "affected_datasets": [
-        "Gateway",
-        "Invoice"
-      ],
-      "recommended_action": "Verify product pricing or discount application.",
-      "metadata": {
-        "gateway_amount": 857.07,
-        "invoice_amount": 833.98
-      },
-      "exception_id": "EXC_1FA2B51B"
-    },
-    {
-      "transaction_id": "TXN_D436A7A8",
-      "rule_name": "AMOUNT_MISMATCH",
-      "severity": "HIGH",
-      "title": "Gateway/Settlement Amount Mismatch",
-      "description": "Gateway amount 857.07 does not match Settlement gross amount 833.98.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Dispute captured amount with payment gateway.",
-      "metadata": {
-        "gateway_amount": 857.07,
-        "settlement_gross": 833.98
-      },
-      "exception_id": "EXC_A077F874"
-    },
-    {
-      "transaction_id": "TXN_7FC15858",
-      "rule_name": "DUPLICATE_TRANSACTION",
-      "severity": "HIGH",
-      "title": "Duplicate Gateway Transaction",
-      "description": "Multiple Gateway records found for transaction TXN_7FC15858.",
+      "description": "Gateway fee 7.59% exceeds allowed range (1%-3%)",
       "affected_datasets": [
         "Gateway"
       ],
-      "recommended_action": "Check for accidental double charging or retry logic bugs.",
+      "recommended_action": "Escalate Payment Gateway",
       "metadata": {
-        "count": 2
+        "fee": 906.36,
+        "gross_amount": 11941.45,
+        "fee_percentage": 7.59
       },
-      "exception_id": "EXC_748AEBC0"
+      "exception_id": "EXC_B021AE07"
     },
     {
-      "transaction_id": "TXN_5C63B6F3",
-      "rule_name": "LATE_SETTLEMENT",
-      "severity": "LOW",
-      "title": "Late Settlement",
-      "description": "Settlement took 6 days, exceeding the SLA of 2 days.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Monitor for systemic delays and negotiate SLA credits if recurring.",
-      "metadata": {
-        "delay_days": 6,
-        "allowed_days": 2
-      },
-      "exception_id": "EXC_3385C743"
-    },
-    {
-      "transaction_id": "TXN_7740D831",
-      "rule_name": "AMOUNT_MISMATCH",
-      "severity": "HIGH",
-      "title": "Gateway/Invoice Amount Mismatch",
-      "description": "Gateway amount 2949.98 does not match Invoice amount 2885.3.",
-      "affected_datasets": [
-        "Gateway",
-        "Invoice"
-      ],
-      "recommended_action": "Verify product pricing or discount application.",
-      "metadata": {
-        "gateway_amount": 2949.98,
-        "invoice_amount": 2885.3
-      },
-      "exception_id": "EXC_8FF4B229"
-    },
-    {
-      "transaction_id": "TXN_7740D831",
-      "rule_name": "AMOUNT_MISMATCH",
-      "severity": "HIGH",
-      "title": "Gateway/Settlement Amount Mismatch",
-      "description": "Gateway amount 2949.98 does not match Settlement gross amount 2885.3.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Dispute captured amount with payment gateway.",
-      "metadata": {
-        "gateway_amount": 2949.98,
-        "settlement_gross": 2885.3
-      },
-      "exception_id": "EXC_B76ED8BE"
-    },
-    {
-      "transaction_id": "TXN_8570B59F",
-      "rule_name": "MISSING_INVOICE",
-      "severity": "MEDIUM",
-      "title": "Missing Invoice",
-      "description": "Transaction TXN_8570B59F exists in Gateway but has no associated Invoice.",
-      "affected_datasets": [
-        "Gateway",
-        "Invoice"
-      ],
-      "recommended_action": "Investigate if the system failed to generate an invoice for the purchase.",
-      "metadata": {},
-      "exception_id": "EXC_01364A43"
-    },
-    {
-      "transaction_id": "TXN_5BF86F3C",
-      "rule_name": "LATE_SETTLEMENT",
-      "severity": "LOW",
-      "title": "Late Settlement",
-      "description": "Settlement took 5 days, exceeding the SLA of 2 days.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Monitor for systemic delays and negotiate SLA credits if recurring.",
-      "metadata": {
-        "delay_days": 5,
-        "allowed_days": 2
-      },
-      "exception_id": "EXC_6609E5EB"
-    },
-    {
-      "transaction_id": "TXN_95831D58",
-      "rule_name": "REFUND_VERIFICATION",
-      "severity": "HIGH",
-      "title": "Refund Not Settled",
-      "description": "Transaction TXN_95831D58 is refunded in Gateway, but no bank debit was found.",
-      "affected_datasets": [
-        "Gateway",
-        "Bank"
-      ],
-      "recommended_action": "Verify if the refund is stuck in processing or requires manual bank transfer.",
-      "metadata": {},
-      "exception_id": "EXC_EFD9D644"
-    },
-    {
-      "transaction_id": "TXN_D9B59F84",
-      "rule_name": "LATE_SETTLEMENT",
-      "severity": "LOW",
-      "title": "Late Settlement",
-      "description": "Settlement took 4 days, exceeding the SLA of 2 days.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Monitor for systemic delays and negotiate SLA credits if recurring.",
-      "metadata": {
-        "delay_days": 4,
-        "allowed_days": 2
-      },
-      "exception_id": "EXC_0146B83C"
-    },
-    {
-      "transaction_id": "TXN_4AB6821C",
-      "rule_name": "DUPLICATE_TRANSACTION",
-      "severity": "HIGH",
-      "title": "Duplicate Gateway Transaction",
-      "description": "Multiple Gateway records found for transaction TXN_4AB6821C.",
-      "affected_datasets": [
-        "Gateway"
-      ],
-      "recommended_action": "Check for accidental double charging or retry logic bugs.",
-      "metadata": {
-        "count": 2
-      },
-      "exception_id": "EXC_9A971EFA"
-    },
-    {
-      "transaction_id": "TXN_7490ADEB",
-      "rule_name": "MISSING_INVOICE",
-      "severity": "MEDIUM",
-      "title": "Missing Invoice",
-      "description": "Transaction TXN_7490ADEB exists in Gateway but has no associated Invoice.",
-      "affected_datasets": [
-        "Gateway",
-        "Invoice"
-      ],
-      "recommended_action": "Investigate if the system failed to generate an invoice for the purchase.",
-      "metadata": {},
-      "exception_id": "EXC_C4B1498E"
-    },
-    {
-      "transaction_id": "TXN_47419B48",
-      "rule_name": "AMOUNT_MISMATCH",
-      "severity": "HIGH",
-      "title": "Gateway/Invoice Amount Mismatch",
-      "description": "Gateway amount 4356.26 does not match Invoice amount 4170.39.",
-      "affected_datasets": [
-        "Gateway",
-        "Invoice"
-      ],
-      "recommended_action": "Verify product pricing or discount application.",
-      "metadata": {
-        "gateway_amount": 4356.26,
-        "invoice_amount": 4170.39
-      },
-      "exception_id": "EXC_54AD1B6D"
-    },
-    {
-      "transaction_id": "TXN_47419B48",
-      "rule_name": "AMOUNT_MISMATCH",
-      "severity": "HIGH",
-      "title": "Gateway/Settlement Amount Mismatch",
-      "description": "Gateway amount 4356.26 does not match Settlement gross amount 4170.39.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Dispute captured amount with payment gateway.",
-      "metadata": {
-        "gateway_amount": 4356.26,
-        "settlement_gross": 4170.39
-      },
-      "exception_id": "EXC_B4C1ECD1"
-    },
-    {
-      "transaction_id": "TXN_F6D70248",
-      "rule_name": "LATE_SETTLEMENT",
-      "severity": "LOW",
-      "title": "Late Settlement",
-      "description": "Settlement took 5 days, exceeding the SLA of 2 days.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Monitor for systemic delays and negotiate SLA credits if recurring.",
-      "metadata": {
-        "delay_days": 5,
-        "allowed_days": 2
-      },
-      "exception_id": "EXC_97977292"
-    },
-    {
-      "transaction_id": "TXN_3F738F50",
+      "transaction_id": "TXN1044",
       "rule_name": "FEE_MISMATCH",
-      "severity": "MEDIUM",
+      "severity": "HIGH",
       "title": "Fee Mismatch",
-      "description": "Gateway fee 18.1 does not match Settlement fee deducted 20.56.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Review gateway pricing agreement and dispute incorrect fee deductions.",
-      "metadata": {
-        "gateway_fee": 18.1,
-        "settlement_fee": 20.56
-      },
-      "exception_id": "EXC_38FD2EF1"
-    },
-    {
-      "transaction_id": "TXN_8CB6B0BA",
-      "rule_name": "FEE_MISMATCH",
-      "severity": "MEDIUM",
-      "title": "Fee Mismatch",
-      "description": "Gateway fee 39.97 does not match Settlement fee deducted 41.13.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Review gateway pricing agreement and dispute incorrect fee deductions.",
-      "metadata": {
-        "gateway_fee": 39.97,
-        "settlement_fee": 41.13
-      },
-      "exception_id": "EXC_E70360E6"
-    },
-    {
-      "transaction_id": "TXN_0CF173F9",
-      "rule_name": "FEE_MISMATCH",
-      "severity": "MEDIUM",
-      "title": "Fee Mismatch",
-      "description": "Gateway fee 43.75 does not match Settlement fee deducted 46.85.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Review gateway pricing agreement and dispute incorrect fee deductions.",
-      "metadata": {
-        "gateway_fee": 43.75,
-        "settlement_fee": 46.85
-      },
-      "exception_id": "EXC_3969C150"
-    },
-    {
-      "transaction_id": "TXN_B60A3DCC",
-      "rule_name": "AMOUNT_MISMATCH",
-      "severity": "HIGH",
-      "title": "Gateway/Invoice Amount Mismatch",
-      "description": "Gateway amount 2638.44 does not match Invoice amount 2604.4.",
-      "affected_datasets": [
-        "Gateway",
-        "Invoice"
-      ],
-      "recommended_action": "Verify product pricing or discount application.",
-      "metadata": {
-        "gateway_amount": 2638.44,
-        "invoice_amount": 2604.4
-      },
-      "exception_id": "EXC_A2577BA2"
-    },
-    {
-      "transaction_id": "TXN_B60A3DCC",
-      "rule_name": "AMOUNT_MISMATCH",
-      "severity": "HIGH",
-      "title": "Gateway/Settlement Amount Mismatch",
-      "description": "Gateway amount 2638.44 does not match Settlement gross amount 2604.4.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Dispute captured amount with payment gateway.",
-      "metadata": {
-        "gateway_amount": 2638.44,
-        "settlement_gross": 2604.4
-      },
-      "exception_id": "EXC_EEB13AAF"
-    },
-    {
-      "transaction_id": "TXN_6793CB09",
-      "rule_name": "LATE_SETTLEMENT",
-      "severity": "LOW",
-      "title": "Late Settlement",
-      "description": "Settlement took 4 days, exceeding the SLA of 2 days.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Monitor for systemic delays and negotiate SLA credits if recurring.",
-      "metadata": {
-        "delay_days": 4,
-        "allowed_days": 2
-      },
-      "exception_id": "EXC_966019F5"
-    },
-    {
-      "transaction_id": "TXN_010E4265",
-      "rule_name": "LATE_SETTLEMENT",
-      "severity": "LOW",
-      "title": "Late Settlement",
-      "description": "Settlement took 4 days, exceeding the SLA of 2 days.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Monitor for systemic delays and negotiate SLA credits if recurring.",
-      "metadata": {
-        "delay_days": 4,
-        "allowed_days": 2
-      },
-      "exception_id": "EXC_7AA9FE48"
-    },
-    {
-      "transaction_id": "TXN_F91E5FCD",
-      "rule_name": "REFUND_VERIFICATION",
-      "severity": "HIGH",
-      "title": "Refund Not Settled",
-      "description": "Transaction TXN_F91E5FCD is refunded in Gateway, but no bank debit was found.",
-      "affected_datasets": [
-        "Gateway",
-        "Bank"
-      ],
-      "recommended_action": "Verify if the refund is stuck in processing or requires manual bank transfer.",
-      "metadata": {},
-      "exception_id": "EXC_B490F737"
-    },
-    {
-      "transaction_id": "TXN_ABF39096",
-      "rule_name": "AMOUNT_MISMATCH",
-      "severity": "HIGH",
-      "title": "Gateway/Invoice Amount Mismatch",
-      "description": "Gateway amount 3442.43 does not match Invoice amount 3341.21.",
-      "affected_datasets": [
-        "Gateway",
-        "Invoice"
-      ],
-      "recommended_action": "Verify product pricing or discount application.",
-      "metadata": {
-        "gateway_amount": 3442.43,
-        "invoice_amount": 3341.21
-      },
-      "exception_id": "EXC_A79FC65B"
-    },
-    {
-      "transaction_id": "TXN_ABF39096",
-      "rule_name": "AMOUNT_MISMATCH",
-      "severity": "HIGH",
-      "title": "Gateway/Settlement Amount Mismatch",
-      "description": "Gateway amount 3442.43 does not match Settlement gross amount 3341.21.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Dispute captured amount with payment gateway.",
-      "metadata": {
-        "gateway_amount": 3442.43,
-        "settlement_gross": 3341.21
-      },
-      "exception_id": "EXC_12332950"
-    },
-    {
-      "transaction_id": "TXN_970C9EB4",
-      "rule_name": "AMOUNT_MISMATCH",
-      "severity": "HIGH",
-      "title": "Gateway/Invoice Amount Mismatch",
-      "description": "Gateway amount 2184.34 does not match Invoice amount 2139.44.",
-      "affected_datasets": [
-        "Gateway",
-        "Invoice"
-      ],
-      "recommended_action": "Verify product pricing or discount application.",
-      "metadata": {
-        "gateway_amount": 2184.34,
-        "invoice_amount": 2139.44
-      },
-      "exception_id": "EXC_E48B8457"
-    },
-    {
-      "transaction_id": "TXN_970C9EB4",
-      "rule_name": "AMOUNT_MISMATCH",
-      "severity": "HIGH",
-      "title": "Gateway/Settlement Amount Mismatch",
-      "description": "Gateway amount 2184.34 does not match Settlement gross amount 2139.44.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Dispute captured amount with payment gateway.",
-      "metadata": {
-        "gateway_amount": 2184.34,
-        "settlement_gross": 2139.44
-      },
-      "exception_id": "EXC_F346F174"
-    },
-    {
-      "transaction_id": "TXN_98B6691B",
-      "rule_name": "DUPLICATE_TRANSACTION",
-      "severity": "HIGH",
-      "title": "Duplicate Gateway Transaction",
-      "description": "Multiple Gateway records found for transaction TXN_98B6691B.",
+      "description": "Gateway fee 0.59% below allowed range (1%-3%)",
       "affected_datasets": [
         "Gateway"
       ],
-      "recommended_action": "Check for accidental double charging or retry logic bugs.",
+      "recommended_action": "Escalate Payment Gateway",
       "metadata": {
-        "count": 2
+        "fee": 20.15,
+        "gross_amount": 3415.04,
+        "fee_percentage": 0.59
       },
-      "exception_id": "EXC_04C88300"
+      "exception_id": "EXC_C349EFB0"
     },
     {
-      "transaction_id": "TXN_85C53910",
-      "rule_name": "REFUND_VERIFICATION",
+      "transaction_id": "TXN1045",
+      "rule_name": "MISSING_SETTLEMENT",
       "severity": "HIGH",
-      "title": "Refund Not Settled",
-      "description": "Transaction TXN_85C53910 is refunded in Gateway, but no bank debit was found.",
+      "title": "Missing Settlement",
+      "description": "Settlement record not found.",
       "affected_datasets": [
         "Gateway",
-        "Bank"
+        "Settlement"
       ],
-      "recommended_action": "Verify if the refund is stuck in processing or requires manual bank transfer.",
-      "metadata": {},
-      "exception_id": "EXC_EBA24280"
+      "recommended_action": "Investigate Settlement Batch",
+      "metadata": {
+        "gateway_status": "SUCCESS"
+      },
+      "exception_id": "EXC_AC54B702"
     },
     {
-      "transaction_id": "TXN_147D7BFC",
-      "rule_name": "REFUND_VERIFICATION",
+      "transaction_id": "TXN1046",
+      "rule_name": "MISSING_SETTLEMENT",
       "severity": "HIGH",
-      "title": "Refund Not Settled",
-      "description": "Transaction TXN_147D7BFC is refunded in Gateway, but no bank debit was found.",
+      "title": "Missing Settlement",
+      "description": "Settlement record not found.",
       "affected_datasets": [
         "Gateway",
-        "Bank"
+        "Settlement"
       ],
-      "recommended_action": "Verify if the refund is stuck in processing or requires manual bank transfer.",
-      "metadata": {},
-      "exception_id": "EXC_670952CB"
+      "recommended_action": "Investigate Settlement Batch",
+      "metadata": {
+        "gateway_status": "SUCCESS"
+      },
+      "exception_id": "EXC_14AB4CD3"
     },
     {
-      "transaction_id": "TXN_EB4F3638",
+      "transaction_id": "TXN1047",
       "rule_name": "DUPLICATE_TRANSACTION",
       "severity": "HIGH",
       "title": "Duplicate Gateway Transaction",
-      "description": "Multiple Gateway records found for transaction TXN_EB4F3638.",
+      "description": "Gateway Transaction ID GW_TXN1047_1 appears twice in Gateway.csv. Duplicate transaction detected.",
       "affected_datasets": [
         "Gateway"
       ],
-      "recommended_action": "Check for accidental double charging or retry logic bugs.",
+      "recommended_action": "Remove Duplicate Record",
       "metadata": {
         "count": 2
       },
-      "exception_id": "EXC_D9B7F653"
+      "exception_id": "EXC_A656E08C"
     },
     {
-      "transaction_id": "TXN_578CD875",
-      "rule_name": "LATE_SETTLEMENT",
-      "severity": "LOW",
-      "title": "Late Settlement",
-      "description": "Settlement took 6 days, exceeding the SLA of 2 days.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Monitor for systemic delays and negotiate SLA credits if recurring.",
-      "metadata": {
-        "delay_days": 6,
-        "allowed_days": 2
-      },
-      "exception_id": "EXC_5A716813"
-    },
-    {
-      "transaction_id": "TXN_D61A080A",
-      "rule_name": "AMOUNT_MISMATCH",
+      "transaction_id": "TXN1048",
+      "rule_name": "DUPLICATE_TRANSACTION",
       "severity": "HIGH",
-      "title": "Gateway/Invoice Amount Mismatch",
-      "description": "Gateway amount 4337.69 does not match Invoice amount 4285.09.",
+      "title": "Duplicate Gateway Transaction",
+      "description": "Gateway Transaction ID GW_TXN1048_1 appears twice in Gateway.csv. Duplicate transaction detected.",
       "affected_datasets": [
-        "Gateway",
-        "Invoice"
+        "Gateway"
       ],
-      "recommended_action": "Verify product pricing or discount application.",
+      "recommended_action": "Remove Duplicate Record",
       "metadata": {
-        "gateway_amount": 4337.69,
-        "invoice_amount": 4285.09
+        "count": 2
       },
-      "exception_id": "EXC_3D5A0CC5"
+      "exception_id": "EXC_3F4E0904"
     },
     {
-      "transaction_id": "TXN_D61A080A",
-      "rule_name": "AMOUNT_MISMATCH",
-      "severity": "HIGH",
-      "title": "Gateway/Settlement Amount Mismatch",
-      "description": "Gateway amount 4337.69 does not match Settlement gross amount 4285.09.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Dispute captured amount with payment gateway.",
-      "metadata": {
-        "gateway_amount": 4337.69,
-        "settlement_gross": 4285.09
-      },
-      "exception_id": "EXC_DBA07F14"
-    },
-    {
-      "transaction_id": "TXN_F83F5274",
+      "transaction_id": "TXN1049",
       "rule_name": "MISSING_INVOICE",
       "severity": "MEDIUM",
       "title": "Missing Invoice",
-      "description": "Transaction TXN_F83F5274 exists in Gateway but has no associated Invoice.",
+      "description": "Invoice record not found.",
       "affected_datasets": [
         "Gateway",
         "Invoice"
       ],
-      "recommended_action": "Investigate if the system failed to generate an invoice for the purchase.",
+      "recommended_action": "Regenerate Invoice",
       "metadata": {},
-      "exception_id": "EXC_67C1A54A"
+      "exception_id": "EXC_A583A456"
     },
     {
-      "transaction_id": "TXN_ACAB8B69",
+      "transaction_id": "TXN1050",
       "rule_name": "LATE_SETTLEMENT",
       "severity": "LOW",
       "title": "Late Settlement",
-      "description": "Settlement took 6 days, exceeding the SLA of 2 days.",
+      "description": "Settlement delayed by 3 days.",
       "affected_datasets": [
         "Gateway",
         "Settlement"
       ],
-      "recommended_action": "Monitor for systemic delays and negotiate SLA credits if recurring.",
+      "recommended_action": "Manual Review",
       "metadata": {
-        "delay_days": 6,
-        "allowed_days": 2
+        "delay_days": 3,
+        "allowed_days": 1
       },
-      "exception_id": "EXC_2608EF88"
-    },
-    {
-      "transaction_id": "TXN_E3EC4F6A",
-      "rule_name": "LATE_SETTLEMENT",
-      "severity": "LOW",
-      "title": "Late Settlement",
-      "description": "Settlement took 6 days, exceeding the SLA of 2 days.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Monitor for systemic delays and negotiate SLA credits if recurring.",
-      "metadata": {
-        "delay_days": 6,
-        "allowed_days": 2
-      },
-      "exception_id": "EXC_06813419"
-    },
-    {
-      "transaction_id": "TXN_3F09F7A6",
-      "rule_name": "FEE_MISMATCH",
-      "severity": "MEDIUM",
-      "title": "Fee Mismatch",
-      "description": "Gateway fee 60.67 does not match Settlement fee deducted 64.11.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Review gateway pricing agreement and dispute incorrect fee deductions.",
-      "metadata": {
-        "gateway_fee": 60.67,
-        "settlement_fee": 64.11
-      },
-      "exception_id": "EXC_2C2AA65D"
-    },
-    {
-      "transaction_id": "TXN_86DC4E34",
-      "rule_name": "DUPLICATE_TRANSACTION",
-      "severity": "HIGH",
-      "title": "Duplicate Gateway Transaction",
-      "description": "Multiple Gateway records found for transaction TXN_86DC4E34.",
-      "affected_datasets": [
-        "Gateway"
-      ],
-      "recommended_action": "Check for accidental double charging or retry logic bugs.",
-      "metadata": {
-        "count": 2
-      },
-      "exception_id": "EXC_7AD30039"
-    },
-    {
-      "transaction_id": "TXN_A63FCF12",
-      "rule_name": "FEE_MISMATCH",
-      "severity": "MEDIUM",
-      "title": "Fee Mismatch",
-      "description": "Gateway fee 57.66 does not match Settlement fee deducted 62.33.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Review gateway pricing agreement and dispute incorrect fee deductions.",
-      "metadata": {
-        "gateway_fee": 57.66,
-        "settlement_fee": 62.33
-      },
-      "exception_id": "EXC_11893CAC"
-    },
-    {
-      "transaction_id": "TXN_7D6C3D2A",
-      "rule_name": "AMOUNT_MISMATCH",
-      "severity": "HIGH",
-      "title": "Gateway/Invoice Amount Mismatch",
-      "description": "Gateway amount 2013.67 does not match Invoice amount 1989.31.",
-      "affected_datasets": [
-        "Gateway",
-        "Invoice"
-      ],
-      "recommended_action": "Verify product pricing or discount application.",
-      "metadata": {
-        "gateway_amount": 2013.67,
-        "invoice_amount": 1989.31
-      },
-      "exception_id": "EXC_DD3885EB"
-    },
-    {
-      "transaction_id": "TXN_7D6C3D2A",
-      "rule_name": "AMOUNT_MISMATCH",
-      "severity": "HIGH",
-      "title": "Gateway/Settlement Amount Mismatch",
-      "description": "Gateway amount 2013.67 does not match Settlement gross amount 1989.31.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Dispute captured amount with payment gateway.",
-      "metadata": {
-        "gateway_amount": 2013.67,
-        "settlement_gross": 1989.31
-      },
-      "exception_id": "EXC_CA6326C7"
-    },
-    {
-      "transaction_id": "TXN_34EE0B67",
-      "rule_name": "DUPLICATE_TRANSACTION",
-      "severity": "HIGH",
-      "title": "Duplicate Gateway Transaction",
-      "description": "Multiple Gateway records found for transaction TXN_34EE0B67.",
-      "affected_datasets": [
-        "Gateway"
-      ],
-      "recommended_action": "Check for accidental double charging or retry logic bugs.",
-      "metadata": {
-        "count": 2
-      },
-      "exception_id": "EXC_291E4CBB"
-    },
-    {
-      "transaction_id": "TXN_BA146757",
-      "rule_name": "MISSING_INVOICE",
-      "severity": "MEDIUM",
-      "title": "Missing Invoice",
-      "description": "Transaction TXN_BA146757 exists in Gateway but has no associated Invoice.",
-      "affected_datasets": [
-        "Gateway",
-        "Invoice"
-      ],
-      "recommended_action": "Investigate if the system failed to generate an invoice for the purchase.",
-      "metadata": {},
-      "exception_id": "EXC_20DD9723"
-    },
-    {
-      "transaction_id": "TXN_BCDD0B48",
-      "rule_name": "AMOUNT_MISMATCH",
-      "severity": "HIGH",
-      "title": "Gateway/Invoice Amount Mismatch",
-      "description": "Gateway amount 2955.29 does not match Invoice amount 2874.58.",
-      "affected_datasets": [
-        "Gateway",
-        "Invoice"
-      ],
-      "recommended_action": "Verify product pricing or discount application.",
-      "metadata": {
-        "gateway_amount": 2955.29,
-        "invoice_amount": 2874.58
-      },
-      "exception_id": "EXC_18F47899"
-    },
-    {
-      "transaction_id": "TXN_BCDD0B48",
-      "rule_name": "AMOUNT_MISMATCH",
-      "severity": "HIGH",
-      "title": "Gateway/Settlement Amount Mismatch",
-      "description": "Gateway amount 2955.29 does not match Settlement gross amount 2874.58.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Dispute captured amount with payment gateway.",
-      "metadata": {
-        "gateway_amount": 2955.29,
-        "settlement_gross": 2874.58
-      },
-      "exception_id": "EXC_6D4A8449"
-    },
-    {
-      "transaction_id": "TXN_7A7E8C31",
-      "rule_name": "AMOUNT_MISMATCH",
-      "severity": "HIGH",
-      "title": "Gateway/Invoice Amount Mismatch",
-      "description": "Gateway amount 779.42 does not match Invoice amount 767.12.",
-      "affected_datasets": [
-        "Gateway",
-        "Invoice"
-      ],
-      "recommended_action": "Verify product pricing or discount application.",
-      "metadata": {
-        "gateway_amount": 779.42,
-        "invoice_amount": 767.12
-      },
-      "exception_id": "EXC_06D73848"
-    },
-    {
-      "transaction_id": "TXN_7A7E8C31",
-      "rule_name": "AMOUNT_MISMATCH",
-      "severity": "HIGH",
-      "title": "Gateway/Settlement Amount Mismatch",
-      "description": "Gateway amount 779.42 does not match Settlement gross amount 767.12.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Dispute captured amount with payment gateway.",
-      "metadata": {
-        "gateway_amount": 779.42,
-        "settlement_gross": 767.12
-      },
-      "exception_id": "EXC_F814FE31"
-    },
-    {
-      "transaction_id": "TXN_1BFF56F4",
-      "rule_name": "LATE_SETTLEMENT",
-      "severity": "LOW",
-      "title": "Late Settlement",
-      "description": "Settlement took 4 days, exceeding the SLA of 2 days.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Monitor for systemic delays and negotiate SLA credits if recurring.",
-      "metadata": {
-        "delay_days": 4,
-        "allowed_days": 2
-      },
-      "exception_id": "EXC_182F4EBE"
-    },
-    {
-      "transaction_id": "TXN_5CCE495D",
-      "rule_name": "AMOUNT_MISMATCH",
-      "severity": "HIGH",
-      "title": "Gateway/Invoice Amount Mismatch",
-      "description": "Gateway amount 389.47 does not match Invoice amount 384.57.",
-      "affected_datasets": [
-        "Gateway",
-        "Invoice"
-      ],
-      "recommended_action": "Verify product pricing or discount application.",
-      "metadata": {
-        "gateway_amount": 389.47,
-        "invoice_amount": 384.57
-      },
-      "exception_id": "EXC_3E6650C0"
-    },
-    {
-      "transaction_id": "TXN_5CCE495D",
-      "rule_name": "AMOUNT_MISMATCH",
-      "severity": "HIGH",
-      "title": "Gateway/Settlement Amount Mismatch",
-      "description": "Gateway amount 389.47 does not match Settlement gross amount 384.57.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Dispute captured amount with payment gateway.",
-      "metadata": {
-        "gateway_amount": 389.47,
-        "settlement_gross": 384.57
-      },
-      "exception_id": "EXC_A65EB4F3"
-    },
-    {
-      "transaction_id": "TXN_A8969E70",
-      "rule_name": "MISSING_INVOICE",
-      "severity": "MEDIUM",
-      "title": "Missing Invoice",
-      "description": "Transaction TXN_A8969E70 exists in Gateway but has no associated Invoice.",
-      "affected_datasets": [
-        "Gateway",
-        "Invoice"
-      ],
-      "recommended_action": "Investigate if the system failed to generate an invoice for the purchase.",
-      "metadata": {},
-      "exception_id": "EXC_B2DE6C40"
-    },
-    {
-      "transaction_id": "TXN_D81CA1A0",
-      "rule_name": "MISSING_INVOICE",
-      "severity": "MEDIUM",
-      "title": "Missing Invoice",
-      "description": "Transaction TXN_D81CA1A0 exists in Gateway but has no associated Invoice.",
-      "affected_datasets": [
-        "Gateway",
-        "Invoice"
-      ],
-      "recommended_action": "Investigate if the system failed to generate an invoice for the purchase.",
-      "metadata": {},
-      "exception_id": "EXC_93209AB1"
-    },
-    {
-      "transaction_id": "TXN_DA3ED15A",
-      "rule_name": "LATE_SETTLEMENT",
-      "severity": "LOW",
-      "title": "Late Settlement",
-      "description": "Settlement took 5 days, exceeding the SLA of 2 days.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Monitor for systemic delays and negotiate SLA credits if recurring.",
-      "metadata": {
-        "delay_days": 5,
-        "allowed_days": 2
-      },
-      "exception_id": "EXC_26F98112"
-    },
-    {
-      "transaction_id": "TXN_1C5F3CBA",
-      "rule_name": "DUPLICATE_TRANSACTION",
-      "severity": "HIGH",
-      "title": "Duplicate Gateway Transaction",
-      "description": "Multiple Gateway records found for transaction TXN_1C5F3CBA.",
-      "affected_datasets": [
-        "Gateway"
-      ],
-      "recommended_action": "Check for accidental double charging or retry logic bugs.",
-      "metadata": {
-        "count": 2
-      },
-      "exception_id": "EXC_D6B36464"
-    },
-    {
-      "transaction_id": "TXN_2B7C5EE3",
-      "rule_name": "MISSING_INVOICE",
-      "severity": "MEDIUM",
-      "title": "Missing Invoice",
-      "description": "Transaction TXN_2B7C5EE3 exists in Gateway but has no associated Invoice.",
-      "affected_datasets": [
-        "Gateway",
-        "Invoice"
-      ],
-      "recommended_action": "Investigate if the system failed to generate an invoice for the purchase.",
-      "metadata": {},
-      "exception_id": "EXC_F044CDF7"
-    },
-    {
-      "transaction_id": "TXN_AD2B2C82",
-      "rule_name": "REFUND_VERIFICATION",
-      "severity": "HIGH",
-      "title": "Refund Not Settled",
-      "description": "Transaction TXN_AD2B2C82 is refunded in Gateway, but no bank debit was found.",
-      "affected_datasets": [
-        "Gateway",
-        "Bank"
-      ],
-      "recommended_action": "Verify if the refund is stuck in processing or requires manual bank transfer.",
-      "metadata": {},
-      "exception_id": "EXC_A0AE2152"
-    },
-    {
-      "transaction_id": "TXN_651E89F1",
-      "rule_name": "MISSING_INVOICE",
-      "severity": "MEDIUM",
-      "title": "Missing Invoice",
-      "description": "Transaction TXN_651E89F1 exists in Gateway but has no associated Invoice.",
-      "affected_datasets": [
-        "Gateway",
-        "Invoice"
-      ],
-      "recommended_action": "Investigate if the system failed to generate an invoice for the purchase.",
-      "metadata": {},
-      "exception_id": "EXC_CCC7A2FF"
-    },
-    {
-      "transaction_id": "TXN_C50C71F4",
-      "rule_name": "MISSING_INVOICE",
-      "severity": "MEDIUM",
-      "title": "Missing Invoice",
-      "description": "Transaction TXN_C50C71F4 exists in Gateway but has no associated Invoice.",
-      "affected_datasets": [
-        "Gateway",
-        "Invoice"
-      ],
-      "recommended_action": "Investigate if the system failed to generate an invoice for the purchase.",
-      "metadata": {},
-      "exception_id": "EXC_F13D72BC"
-    },
-    {
-      "transaction_id": "TXN_D8FE3FB8",
-      "rule_name": "LATE_SETTLEMENT",
-      "severity": "LOW",
-      "title": "Late Settlement",
-      "description": "Settlement took 5 days, exceeding the SLA of 2 days.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Monitor for systemic delays and negotiate SLA credits if recurring.",
-      "metadata": {
-        "delay_days": 5,
-        "allowed_days": 2
-      },
-      "exception_id": "EXC_2E2A9D28"
-    },
-    {
-      "transaction_id": "TXN_297A8503",
-      "rule_name": "LATE_SETTLEMENT",
-      "severity": "LOW",
-      "title": "Late Settlement",
-      "description": "Settlement took 6 days, exceeding the SLA of 2 days.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Monitor for systemic delays and negotiate SLA credits if recurring.",
-      "metadata": {
-        "delay_days": 6,
-        "allowed_days": 2
-      },
-      "exception_id": "EXC_9E498C22"
-    },
-    {
-      "transaction_id": "TXN_2041E7ED",
-      "rule_name": "FEE_MISMATCH",
-      "severity": "MEDIUM",
-      "title": "Fee Mismatch",
-      "description": "Gateway fee 98.03 does not match Settlement fee deducted 101.61.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Review gateway pricing agreement and dispute incorrect fee deductions.",
-      "metadata": {
-        "gateway_fee": 98.03,
-        "settlement_fee": 101.61
-      },
-      "exception_id": "EXC_5B2B7094"
-    },
-    {
-      "transaction_id": "TXN_D4147D03",
-      "rule_name": "LATE_SETTLEMENT",
-      "severity": "LOW",
-      "title": "Late Settlement",
-      "description": "Settlement took 6 days, exceeding the SLA of 2 days.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Monitor for systemic delays and negotiate SLA credits if recurring.",
-      "metadata": {
-        "delay_days": 6,
-        "allowed_days": 2
-      },
-      "exception_id": "EXC_A522FC78"
-    },
-    {
-      "transaction_id": "TXN_2376324F",
-      "rule_name": "LATE_SETTLEMENT",
-      "severity": "LOW",
-      "title": "Late Settlement",
-      "description": "Settlement took 5 days, exceeding the SLA of 2 days.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Monitor for systemic delays and negotiate SLA credits if recurring.",
-      "metadata": {
-        "delay_days": 5,
-        "allowed_days": 2
-      },
-      "exception_id": "EXC_F81BD035"
-    },
-    {
-      "transaction_id": "TXN_1D75F901",
-      "rule_name": "AMOUNT_MISMATCH",
-      "severity": "HIGH",
-      "title": "Gateway/Invoice Amount Mismatch",
-      "description": "Gateway amount 2790.86 does not match Invoice amount 2697.52.",
-      "affected_datasets": [
-        "Gateway",
-        "Invoice"
-      ],
-      "recommended_action": "Verify product pricing or discount application.",
-      "metadata": {
-        "gateway_amount": 2790.86,
-        "invoice_amount": 2697.52
-      },
-      "exception_id": "EXC_7506D5C4"
-    },
-    {
-      "transaction_id": "TXN_1D75F901",
-      "rule_name": "AMOUNT_MISMATCH",
-      "severity": "HIGH",
-      "title": "Gateway/Settlement Amount Mismatch",
-      "description": "Gateway amount 2790.86 does not match Settlement gross amount 2697.52.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Dispute captured amount with payment gateway.",
-      "metadata": {
-        "gateway_amount": 2790.86,
-        "settlement_gross": 2697.52
-      },
-      "exception_id": "EXC_6653DD7A"
-    },
-    {
-      "transaction_id": "TXN_B2CC4372",
-      "rule_name": "AMOUNT_MISMATCH",
-      "severity": "HIGH",
-      "title": "Gateway/Invoice Amount Mismatch",
-      "description": "Gateway amount 4537.5 does not match Invoice amount 4349.31.",
-      "affected_datasets": [
-        "Gateway",
-        "Invoice"
-      ],
-      "recommended_action": "Verify product pricing or discount application.",
-      "metadata": {
-        "gateway_amount": 4537.5,
-        "invoice_amount": 4349.31
-      },
-      "exception_id": "EXC_D1CB768F"
-    },
-    {
-      "transaction_id": "TXN_B2CC4372",
-      "rule_name": "AMOUNT_MISMATCH",
-      "severity": "HIGH",
-      "title": "Gateway/Settlement Amount Mismatch",
-      "description": "Gateway amount 4537.5 does not match Settlement gross amount 4349.31.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Dispute captured amount with payment gateway.",
-      "metadata": {
-        "gateway_amount": 4537.5,
-        "settlement_gross": 4349.31
-      },
-      "exception_id": "EXC_BF218DB1"
-    },
-    {
-      "transaction_id": "TXN_609CF7AF",
-      "rule_name": "AMOUNT_MISMATCH",
-      "severity": "HIGH",
-      "title": "Gateway/Invoice Amount Mismatch",
-      "description": "Gateway amount 4468.89 does not match Invoice amount 4372.21.",
-      "affected_datasets": [
-        "Gateway",
-        "Invoice"
-      ],
-      "recommended_action": "Verify product pricing or discount application.",
-      "metadata": {
-        "gateway_amount": 4468.89,
-        "invoice_amount": 4372.21
-      },
-      "exception_id": "EXC_A390F47B"
-    },
-    {
-      "transaction_id": "TXN_609CF7AF",
-      "rule_name": "AMOUNT_MISMATCH",
-      "severity": "HIGH",
-      "title": "Gateway/Settlement Amount Mismatch",
-      "description": "Gateway amount 4468.89 does not match Settlement gross amount 4372.21.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Dispute captured amount with payment gateway.",
-      "metadata": {
-        "gateway_amount": 4468.89,
-        "settlement_gross": 4372.21
-      },
-      "exception_id": "EXC_1A439D7E"
-    },
-    {
-      "transaction_id": "TXN_7EF55011",
-      "rule_name": "FEE_MISMATCH",
-      "severity": "MEDIUM",
-      "title": "Fee Mismatch",
-      "description": "Gateway fee 33.99 does not match Settlement fee deducted 37.82.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Review gateway pricing agreement and dispute incorrect fee deductions.",
-      "metadata": {
-        "gateway_fee": 33.99,
-        "settlement_fee": 37.82
-      },
-      "exception_id": "EXC_EE4C4722"
-    },
-    {
-      "transaction_id": "TXN_6D150B06",
-      "rule_name": "FEE_MISMATCH",
-      "severity": "MEDIUM",
-      "title": "Fee Mismatch",
-      "description": "Gateway fee 63.19 does not match Settlement fee deducted 64.53.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Review gateway pricing agreement and dispute incorrect fee deductions.",
-      "metadata": {
-        "gateway_fee": 63.19,
-        "settlement_fee": 64.53
-      },
-      "exception_id": "EXC_50280383"
-    },
-    {
-      "transaction_id": "TXN_022F46BB",
-      "rule_name": "DUPLICATE_TRANSACTION",
-      "severity": "HIGH",
-      "title": "Duplicate Gateway Transaction",
-      "description": "Multiple Gateway records found for transaction TXN_022F46BB.",
-      "affected_datasets": [
-        "Gateway"
-      ],
-      "recommended_action": "Check for accidental double charging or retry logic bugs.",
-      "metadata": {
-        "count": 2
-      },
-      "exception_id": "EXC_834376B7"
-    },
-    {
-      "transaction_id": "TXN_CA90001C",
-      "rule_name": "DUPLICATE_TRANSACTION",
-      "severity": "HIGH",
-      "title": "Duplicate Gateway Transaction",
-      "description": "Multiple Gateway records found for transaction TXN_CA90001C.",
-      "affected_datasets": [
-        "Gateway"
-      ],
-      "recommended_action": "Check for accidental double charging or retry logic bugs.",
-      "metadata": {
-        "count": 2
-      },
-      "exception_id": "EXC_5DE40E40"
-    },
-    {
-      "transaction_id": "TXN_5FE0C7C3",
-      "rule_name": "DUPLICATE_TRANSACTION",
-      "severity": "HIGH",
-      "title": "Duplicate Gateway Transaction",
-      "description": "Multiple Gateway records found for transaction TXN_5FE0C7C3.",
-      "affected_datasets": [
-        "Gateway"
-      ],
-      "recommended_action": "Check for accidental double charging or retry logic bugs.",
-      "metadata": {
-        "count": 2
-      },
-      "exception_id": "EXC_1A131875"
-    },
-    {
-      "transaction_id": "TXN_782152E0",
-      "rule_name": "LATE_SETTLEMENT",
-      "severity": "LOW",
-      "title": "Late Settlement",
-      "description": "Settlement took 5 days, exceeding the SLA of 2 days.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Monitor for systemic delays and negotiate SLA credits if recurring.",
-      "metadata": {
-        "delay_days": 5,
-        "allowed_days": 2
-      },
-      "exception_id": "EXC_A74D5DE3"
-    },
-    {
-      "transaction_id": "TXN_01A4C2D1",
-      "rule_name": "ORPHAN_RECORD",
-      "severity": "HIGH",
-      "title": "Orphan Record",
-      "description": "Transaction TXN_01A4C2D1 exists only in Bank.",
-      "affected_datasets": [
-        "Bank"
-      ],
-      "recommended_action": "Manually reconcile against non-gateway accounting records.",
-      "metadata": {},
-      "exception_id": "EXC_45D089FA"
-    },
-    {
-      "transaction_id": "TXN_B241CFD3",
-      "rule_name": "ORPHAN_RECORD",
-      "severity": "HIGH",
-      "title": "Orphan Record",
-      "description": "Transaction TXN_B241CFD3 exists only in Bank.",
-      "affected_datasets": [
-        "Bank"
-      ],
-      "recommended_action": "Manually reconcile against non-gateway accounting records.",
-      "metadata": {},
-      "exception_id": "EXC_67176048"
-    },
-    {
-      "transaction_id": "TXN_2D28A2A8",
-      "rule_name": "ORPHAN_RECORD",
-      "severity": "HIGH",
-      "title": "Orphan Record",
-      "description": "Transaction TXN_2D28A2A8 exists only in Bank.",
-      "affected_datasets": [
-        "Bank"
-      ],
-      "recommended_action": "Manually reconcile against non-gateway accounting records.",
-      "metadata": {},
-      "exception_id": "EXC_E221829F"
-    },
-    {
-      "transaction_id": "TXN_F2CFCD63",
-      "rule_name": "ORPHAN_RECORD",
-      "severity": "HIGH",
-      "title": "Orphan Record",
-      "description": "Transaction TXN_F2CFCD63 exists only in Bank.",
-      "affected_datasets": [
-        "Bank"
-      ],
-      "recommended_action": "Manually reconcile against non-gateway accounting records.",
-      "metadata": {},
-      "exception_id": "EXC_4AD921D0"
-    },
-    {
-      "transaction_id": "TXN_BFFA7A4F",
-      "rule_name": "ORPHAN_RECORD",
-      "severity": "HIGH",
-      "title": "Orphan Record",
-      "description": "Transaction TXN_BFFA7A4F exists only in Bank.",
-      "affected_datasets": [
-        "Bank"
-      ],
-      "recommended_action": "Manually reconcile against non-gateway accounting records.",
-      "metadata": {},
-      "exception_id": "EXC_36C44F67"
-    },
-    {
-      "transaction_id": "TXN_BF7B539B",
-      "rule_name": "MISSING_SETTLEMENT",
-      "severity": "HIGH",
-      "title": "Missing Settlement",
-      "description": "Transaction TXN_BF7B539B is marked SUCCESS in Gateway but missing from Settlement.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Follow up with payment gateway for missing settlement payout.",
-      "metadata": {
-        "gateway_status": "SUCCESS"
-      },
-      "exception_id": "EXC_B9F7DA6B"
-    },
-    {
-      "transaction_id": "TXN_FF9AB5C2",
-      "rule_name": "MISSING_SETTLEMENT",
-      "severity": "HIGH",
-      "title": "Missing Settlement",
-      "description": "Transaction TXN_FF9AB5C2 is marked SUCCESS in Gateway but missing from Settlement.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Follow up with payment gateway for missing settlement payout.",
-      "metadata": {
-        "gateway_status": "SUCCESS"
-      },
-      "exception_id": "EXC_5CBB21CD"
-    },
-    {
-      "transaction_id": "TXN_84DAD06A",
-      "rule_name": "MISSING_SETTLEMENT",
-      "severity": "HIGH",
-      "title": "Missing Settlement",
-      "description": "Transaction TXN_84DAD06A is marked SUCCESS in Gateway but missing from Settlement.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Follow up with payment gateway for missing settlement payout.",
-      "metadata": {
-        "gateway_status": "SUCCESS"
-      },
-      "exception_id": "EXC_1BF4072B"
-    },
-    {
-      "transaction_id": "TXN_F1738856",
-      "rule_name": "MISSING_SETTLEMENT",
-      "severity": "HIGH",
-      "title": "Missing Settlement",
-      "description": "Transaction TXN_F1738856 is marked SUCCESS in Gateway but missing from Settlement.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Follow up with payment gateway for missing settlement payout.",
-      "metadata": {
-        "gateway_status": "SUCCESS"
-      },
-      "exception_id": "EXC_540F6185"
-    },
-    {
-      "transaction_id": "TXN_F206C269",
-      "rule_name": "MISSING_SETTLEMENT",
-      "severity": "HIGH",
-      "title": "Missing Settlement",
-      "description": "Transaction TXN_F206C269 is marked SUCCESS in Gateway but missing from Settlement.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Follow up with payment gateway for missing settlement payout.",
-      "metadata": {
-        "gateway_status": "SUCCESS"
-      },
-      "exception_id": "EXC_DBB9B819"
-    },
-    {
-      "transaction_id": "TXN_67884209",
-      "rule_name": "MISSING_SETTLEMENT",
-      "severity": "HIGH",
-      "title": "Missing Settlement",
-      "description": "Transaction TXN_67884209 is marked SUCCESS in Gateway but missing from Settlement.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Follow up with payment gateway for missing settlement payout.",
-      "metadata": {
-        "gateway_status": "SUCCESS"
-      },
-      "exception_id": "EXC_74905AA4"
-    },
-    {
-      "transaction_id": "TXN_4447CEAB",
-      "rule_name": "MISSING_SETTLEMENT",
-      "severity": "HIGH",
-      "title": "Missing Settlement",
-      "description": "Transaction TXN_4447CEAB is marked SUCCESS in Gateway but missing from Settlement.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Follow up with payment gateway for missing settlement payout.",
-      "metadata": {
-        "gateway_status": "SUCCESS"
-      },
-      "exception_id": "EXC_43E542C1"
-    },
-    {
-      "transaction_id": "TXN_905881DF",
-      "rule_name": "MISSING_SETTLEMENT",
-      "severity": "HIGH",
-      "title": "Missing Settlement",
-      "description": "Transaction TXN_905881DF is marked SUCCESS in Gateway but missing from Settlement.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Follow up with payment gateway for missing settlement payout.",
-      "metadata": {
-        "gateway_status": "SUCCESS"
-      },
-      "exception_id": "EXC_E79FFED8"
-    },
-    {
-      "transaction_id": "TXN_3DF51967",
-      "rule_name": "MISSING_SETTLEMENT",
-      "severity": "HIGH",
-      "title": "Missing Settlement",
-      "description": "Transaction TXN_3DF51967 is marked SUCCESS in Gateway but missing from Settlement.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Follow up with payment gateway for missing settlement payout.",
-      "metadata": {
-        "gateway_status": "SUCCESS"
-      },
-      "exception_id": "EXC_938AF230"
-    },
-    {
-      "transaction_id": "TXN_CB6AD0C7",
-      "rule_name": "MISSING_SETTLEMENT",
-      "severity": "HIGH",
-      "title": "Missing Settlement",
-      "description": "Transaction TXN_CB6AD0C7 is marked SUCCESS in Gateway but missing from Settlement.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Follow up with payment gateway for missing settlement payout.",
-      "metadata": {
-        "gateway_status": "SUCCESS"
-      },
-      "exception_id": "EXC_761238C9"
-    },
-    {
-      "transaction_id": "TXN_AB0B4CC5",
-      "rule_name": "MISSING_SETTLEMENT",
-      "severity": "HIGH",
-      "title": "Missing Settlement",
-      "description": "Transaction TXN_AB0B4CC5 is marked SUCCESS in Gateway but missing from Settlement.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Follow up with payment gateway for missing settlement payout.",
-      "metadata": {
-        "gateway_status": "SUCCESS"
-      },
-      "exception_id": "EXC_A67808EF"
-    },
-    {
-      "transaction_id": "TXN_D2938E6E",
-      "rule_name": "MISSING_SETTLEMENT",
-      "severity": "HIGH",
-      "title": "Missing Settlement",
-      "description": "Transaction TXN_D2938E6E is marked SUCCESS in Gateway but missing from Settlement.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Follow up with payment gateway for missing settlement payout.",
-      "metadata": {
-        "gateway_status": "SUCCESS"
-      },
-      "exception_id": "EXC_0E702602"
-    },
-    {
-      "transaction_id": "TXN_C219A845",
-      "rule_name": "MISSING_SETTLEMENT",
-      "severity": "HIGH",
-      "title": "Missing Settlement",
-      "description": "Transaction TXN_C219A845 is marked SUCCESS in Gateway but missing from Settlement.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Follow up with payment gateway for missing settlement payout.",
-      "metadata": {
-        "gateway_status": "SUCCESS"
-      },
-      "exception_id": "EXC_E2F210FE"
-    },
-    {
-      "transaction_id": "TXN_28CC812A",
-      "rule_name": "MISSING_SETTLEMENT",
-      "severity": "HIGH",
-      "title": "Missing Settlement",
-      "description": "Transaction TXN_28CC812A is marked SUCCESS in Gateway but missing from Settlement.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Follow up with payment gateway for missing settlement payout.",
-      "metadata": {
-        "gateway_status": "SUCCESS"
-      },
-      "exception_id": "EXC_41685E24"
-    },
-    {
-      "transaction_id": "TXN_3D274AD5",
-      "rule_name": "MISSING_SETTLEMENT",
-      "severity": "HIGH",
-      "title": "Missing Settlement",
-      "description": "Transaction TXN_3D274AD5 is marked SUCCESS in Gateway but missing from Settlement.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Follow up with payment gateway for missing settlement payout.",
-      "metadata": {
-        "gateway_status": "SUCCESS"
-      },
-      "exception_id": "EXC_43674C39"
-    },
-    {
-      "transaction_id": "TXN_2CAE93A2",
-      "rule_name": "MISSING_SETTLEMENT",
-      "severity": "HIGH",
-      "title": "Missing Settlement",
-      "description": "Transaction TXN_2CAE93A2 is marked SUCCESS in Gateway but missing from Settlement.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Follow up with payment gateway for missing settlement payout.",
-      "metadata": {
-        "gateway_status": "SUCCESS"
-      },
-      "exception_id": "EXC_AE18F39B"
-    },
-    {
-      "transaction_id": "TXN_CEBD3B2B",
-      "rule_name": "MISSING_SETTLEMENT",
-      "severity": "HIGH",
-      "title": "Missing Settlement",
-      "description": "Transaction TXN_CEBD3B2B is marked SUCCESS in Gateway but missing from Settlement.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Follow up with payment gateway for missing settlement payout.",
-      "metadata": {
-        "gateway_status": "SUCCESS"
-      },
-      "exception_id": "EXC_01A3F7C4"
-    },
-    {
-      "transaction_id": "TXN_4674A0EB",
-      "rule_name": "MISSING_SETTLEMENT",
-      "severity": "HIGH",
-      "title": "Missing Settlement",
-      "description": "Transaction TXN_4674A0EB is marked SUCCESS in Gateway but missing from Settlement.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Follow up with payment gateway for missing settlement payout.",
-      "metadata": {
-        "gateway_status": "SUCCESS"
-      },
-      "exception_id": "EXC_8889427E"
-    },
-    {
-      "transaction_id": "TXN_AED0FB57",
-      "rule_name": "MISSING_SETTLEMENT",
-      "severity": "HIGH",
-      "title": "Missing Settlement",
-      "description": "Transaction TXN_AED0FB57 is marked SUCCESS in Gateway but missing from Settlement.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Follow up with payment gateway for missing settlement payout.",
-      "metadata": {
-        "gateway_status": "SUCCESS"
-      },
-      "exception_id": "EXC_2FD97C9D"
-    },
-    {
-      "transaction_id": "TXN_F4852088",
-      "rule_name": "MISSING_SETTLEMENT",
-      "severity": "HIGH",
-      "title": "Missing Settlement",
-      "description": "Transaction TXN_F4852088 is marked SUCCESS in Gateway but missing from Settlement.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Follow up with payment gateway for missing settlement payout.",
-      "metadata": {
-        "gateway_status": "SUCCESS"
-      },
-      "exception_id": "EXC_1E72845E"
-    },
-    {
-      "transaction_id": "TXN_06A574EC",
-      "rule_name": "MISSING_SETTLEMENT",
-      "severity": "HIGH",
-      "title": "Missing Settlement",
-      "description": "Transaction TXN_06A574EC is marked SUCCESS in Gateway but missing from Settlement.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Follow up with payment gateway for missing settlement payout.",
-      "metadata": {
-        "gateway_status": "SUCCESS"
-      },
-      "exception_id": "EXC_A8B4C634"
-    },
-    {
-      "transaction_id": "TXN_E893786D",
-      "rule_name": "MISSING_SETTLEMENT",
-      "severity": "HIGH",
-      "title": "Missing Settlement",
-      "description": "Transaction TXN_E893786D is marked SUCCESS in Gateway but missing from Settlement.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Follow up with payment gateway for missing settlement payout.",
-      "metadata": {
-        "gateway_status": "SUCCESS"
-      },
-      "exception_id": "EXC_90D9B45D"
-    },
-    {
-      "transaction_id": "TXN_3A4D45FD",
-      "rule_name": "MISSING_SETTLEMENT",
-      "severity": "HIGH",
-      "title": "Missing Settlement",
-      "description": "Transaction TXN_3A4D45FD is marked SUCCESS in Gateway but missing from Settlement.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Follow up with payment gateway for missing settlement payout.",
-      "metadata": {
-        "gateway_status": "SUCCESS"
-      },
-      "exception_id": "EXC_8158B0BB"
-    },
-    {
-      "transaction_id": "TXN_EB3CC270",
-      "rule_name": "MISSING_SETTLEMENT",
-      "severity": "HIGH",
-      "title": "Missing Settlement",
-      "description": "Transaction TXN_EB3CC270 is marked SUCCESS in Gateway but missing from Settlement.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Follow up with payment gateway for missing settlement payout.",
-      "metadata": {
-        "gateway_status": "SUCCESS"
-      },
-      "exception_id": "EXC_A1225C0B"
-    },
-    {
-      "transaction_id": "TXN_49D83188",
-      "rule_name": "MISSING_SETTLEMENT",
-      "severity": "HIGH",
-      "title": "Missing Settlement",
-      "description": "Transaction TXN_49D83188 is marked SUCCESS in Gateway but missing from Settlement.",
-      "affected_datasets": [
-        "Gateway",
-        "Settlement"
-      ],
-      "recommended_action": "Follow up with payment gateway for missing settlement payout.",
-      "metadata": {
-        "gateway_status": "SUCCESS"
-      },
-      "exception_id": "EXC_CC52AFE8"
+      "exception_id": "EXC_EB4F7D9A"
     }
   ]
 }

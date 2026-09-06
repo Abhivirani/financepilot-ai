@@ -28,6 +28,7 @@ class StateStore:
             
             self.batches[batch_id] = summary
             self.latest_batch_id = batch_id
+            self.latest_run_id = None
             
             # Mirror to disk
             batch_dir = Path(settings.UPLOAD_DIR) / batch_id
