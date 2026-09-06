@@ -299,13 +299,6 @@ GEMINI_API_KEY=your_gemini_api_key_here
 4. **Inspect Exceptions**: Go to `http://localhost:3000/exceptions` to view detected anomalies, filter by rule severity, and click **AI Explain** to generate exception explanations.
 5. **Generate AI Report**: Open `http://localhost:3000/reports` or `http://localhost:3000/ai` to generate an AI Executive Summary covering operational risks and recommended actions.
 
-## Contributors
-
-**Team of 3**
-
-- Contributor 1 - [Placeholder]
-- Contributor 2 - [Placeholder]
-- Contributor 3 - [Placeholder]
 
 ## License
 
